@@ -25,7 +25,7 @@ import pkgpanda
 import pkgpanda.build
 import pkgpanda.util
 import release.storage
-from pkgpanda.constants import PACKAGES_DIR
+from pkgpanda.constants import DOCKERFILE_DIR, PACKAGES_DIR
 from pkgpanda.util import is_windows, logger
 
 if is_windows:
@@ -539,10 +539,7 @@ def _get_global_builders():
     """
     res = {}
 
-    if is_windows:
-        docker_dir = 'docker.windows/'
-    else:
-        docker_dir = 'docker/'
+    docker_dir = DOCKERFILE_DIR
 
     for name in pkg_resources.resource_listdir('pkgpanda', docker_dir):
         res[name] = pkg_resources.resource_filename('pkgpanda',
