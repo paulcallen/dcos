@@ -31,7 +31,8 @@ from pkgpanda.util import is_windows, logger
 if is_windows:
     provider_names = ['azure', 'bash']
 else:
-    provider_names = ['aws', 'azure', 'bash']
+#    provider_names = ['aws', 'azure', 'bash']
+    provider_names = ['azure', 'bash']
 
 
 class ConfigError(Exception):

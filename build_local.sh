@@ -26,7 +26,7 @@ storage:
     path: $HOME/dcos-artifacts
 options:
   preferred: local
-  cloudformation_s3_url: https://s3-us-west-2.amazonaws.com/downloads.dcos.io/dcos
+  path: /tmp/dcos-artifacts
 EOF
 fi
 
