@@ -4,6 +4,7 @@ this
 .idea/
 dcos-config--setup*.tar.xz
 dcos-config-windows--setup*.tar.xz
+dcos-metadata--setup*.tar.xz
 tmp/
 runner.env
 artifacts/
@@ -18,10 +19,12 @@ dcos_generate_config.sh
 .*.swp
 *.egg-info
 wheelhouse/
-./dcos-release.config.yaml
+/dcos-release.config.yaml
+package_lists/
 
 # Integration tests related:
 test/build/*
 PASSED
 FAILED
 test/.vagrant/*
+

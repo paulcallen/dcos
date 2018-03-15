@@ -2,7 +2,7 @@
   "sources": {
     "erlang": {
       "kind": "url",
-      "url": "http://erlang.org/download/otp_win64_19.3.exe",
+      "url": "https://packages.erlang-solutions.com/erlang/esl-erlang/FLAVOUR_1_general/esl-erlang_19.3~windows_amd64.exe",
       "sha1": "01f6d43872f675ae53800de594542a8406267801"
     }
   },

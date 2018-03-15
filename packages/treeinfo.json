@@ -3,6 +3,7 @@
     "dcos-launch",
     "erts",
     "openstackservice",
+    "python-windows",
     "spartan"
   ],
   "bootstrap_package_list": ["dcos-image"]

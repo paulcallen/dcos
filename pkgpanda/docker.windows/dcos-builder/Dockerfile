@@ -3,7 +3,7 @@
 # windows uses the default backslash for filenames making filepaths hard
 # to read
 
-FROM microsoft/windowsservercore:1709
+FROM microsoft/windowsservercore:1803
 
 # Default to PowerShell if no other command specified.
 CMD ["powershell.exe", "-NoLogo", "-ExecutionPolicy", "Bypass"]
@@ -24,7 +24,8 @@ ADD https://github.com/mesos/3rdparty/raw/master/make-3.81.exe c:\temp\make-3.81
 COPY .\setup-make.ps1 \temp\
 RUN  powershell.exe -file c:\temp\setup-make.ps1
 
-ADD http://erlang.org/download/otp_win64_19.3.exe c:\temp\otp_win64_19.3.exe
+
+ADD https://packages.erlang-solutions.com/erlang/esl-erlang/FLAVOUR_1_general/esl-erlang_19.3~windows_amd64.exe c:\temp\otp_win64_19.3.exe
 COPY .\setup-erlang.ps1 \temp\
 RUN  powershell.exe -file c:\temp\setup-erlang.ps1
 
@@ -39,7 +40,7 @@ ENV CMAKE_PATH 'C:\Program Files\CMake\bin'
 ENV GNUWIN32_PATH 'C:\Program Files (x86)\GnuWin32\bin'
 ENV ERLANG_PATH 'C:\Program Files\erlang\bin'
 
-RUN setx /m PATH "%PATH%;C:\Bin;%GIT_PATH%;%CMAKE_PATH%;%GNUWIN32_PATH%;%ZIP_PATH%;%ERLANG_PATH%;%GOLANG_PATH%"
+RUN setx /m PATH "%PATH%;C:\Bin;%GIT_PATH%;%CMAKE_PATH%;%GNUWIN32_PATH%;%ERLANG_PATH%;%GOLANG_PATH%"
 
 # Download useful tools to C:\Bin.
 ADD https://dist.nuget.org/win-x86-commandline/v4.1.0/nuget.exe C:\Bin\nuget.exe
@@ -59,5 +60,6 @@ RUN C:\TEMP\vs_buildtools.exe --quiet --wait --norestart --nocache --installPath
     || IF "%ERRORLEVEL%"=="3010" EXIT 0
 
 # Start developer command prompt with any other commands specified.
-
-ENTRYPOINT C:\BuildTools\Common7\Tools\VsDevCmd.bat && powershell.exe -file
+# note: vsdevcmd.bat builds for x86 by default, use these options for amd64:
+# -arch=amd64 (-host_arch==amd64 also?)
+ENTRYPOINT C:\BuildTools\Common7\Tools\VsDevCmd.bat -no_logo && powershell.exe -file

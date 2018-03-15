@@ -30,6 +30,7 @@ from subprocess import CalledProcessError, check_call, check_output
 from typing import Union
 
 from pkgpanda.constants import (DCOS_SERVICE_CONFIGURATION_FILE,
+                                install_root,
                                 RESERVED_UNIT_NAMES,
                                 STATE_DIR_ROOT)
 from pkgpanda.exceptions import (InstallError, PackageError, PackageNotFound,
@@ -46,13 +47,22 @@ if not is_windows:
 
 reserved_env_vars = ["LD_LIBRARY_PATH", "PATH"]
 
-env_header = """# Pkgpanda provided environment variables
-LD_LIBRARY_PATH={0}/lib
-PATH={0}/bin:/usr/bin:/bin:/sbin\n\n"""
-
-env_export_header = """# Pkgpanda provided environment variables
-export LD_LIBRARY_PATH={0}/lib
-export PATH="{0}/bin:$PATH"\n\n"""
+if is_windows:
+    environment_filename = "environment.ps1"
+    environment_export_filename = "environment.export.ps1"
+    env_header = """# Pkgpanda provided environment variables
+    $env:PATH="$env:PATH;{0}\\bin\\scripts;{0}\\bin"\n\n"""
+    env_export_header = """# Pkgpanda provided environment variables
+    $env:PATH="{0}\\bin\\scripts;{0}\\bin;$env:PATH"\n\n"""
+else:
+    environment_filename = "environment"
+    environment_export_filename = "environment.export"
+    env_header = """# Pkgpanda provided environment variables
+    LD_LIBRARY_PATH={0}/lib
+    PATH={0}/bin:/usr/bin:/bin:/sbin\n\n"""
+    env_export_header = """# Pkgpanda provided environment variables
+    export LD_LIBRARY_PATH={0}/lib
+    export PATH="{0}/bin:$PATH"\n\n"""
 
 name_regex = "^[a-zA-Z0-9@_+][a-zA-Z0-9@._+\-]*$"
 version_regex = "^[a-zA-Z0-9@_+:.]+$"
@@ -532,7 +542,10 @@ def symlink_tree(src, dest):
             symlink_tree(src_path, dest_path)
         else:
             try:
-                os.symlink(src_path, dest_path)
+                if is_windows:
+                    os.link(src_path, dest_path)
+                else:
+                    os.symlink(src_path, dest_path)
             except FileNotFoundError as ex:
                 raise ConflictingFile(src_path, dest_path, ex) from ex
 
@@ -624,7 +637,7 @@ class UserManagement:
         add_user_cmd = [
             'useradd',
             '--system',
-            '--home-dir', '/opt/mesosphere',
+            '--home-dir', install_root,
             '--shell', '/sbin/nologin',
             '-c', 'DCOS System User',
         ]
@@ -756,8 +769,8 @@ class Install:
         return list(map(
             self._make_abs,
             self.__well_known_dirs + [
-                "environment",
-                "environment.export",
+                environment_filename,
+                environment_export_filename,
                 "active",
                 "active.buildinfo.full.json"
             ]))
@@ -800,8 +813,8 @@ class Install:
             symlink_tree(src, dest)
 
         # Set the new LD_LIBRARY_PATH, PATH.
-        env_contents = env_header.format("/opt/mesosphere" if self.__fake_path else self.__root)
-        env_export_contents = env_export_header.format("/opt/mesosphere" if self.__fake_path else self.__root)
+        env_contents = env_header.format(install_root if self.__fake_path else self.__root)
+        env_export_contents = env_export_header.format(install_root if self.__fake_path else self.__root)
 
         active_buildinfo_full = {}
 
@@ -865,8 +878,12 @@ class Install:
             env_export_contents += "# package: {0}\n".format(package.id)
 
             for k, v in package.environment.items():
-                env_contents += "{0}={1}\n".format(k, v)
-                env_export_contents += "export {0}={1}\n".format(k, v)
+                if is_windows:
+                    env_contents += "${0}='{1}'\n".format(k, v)
+                    env_export_contents += "$env:{0}='{1}'\n".format(k, v)
+                else:
+                    env_contents += "{0}={1}\n".format(k, v)
+                    env_export_contents += "export {0}={1}\n".format(k, v)
 
             env_contents += "\n"
             env_export_contents += "\n"
@@ -917,11 +934,11 @@ class Install:
         write_json(dcos_service_configuration_file, dcos_service_configuration)
 
         # Write out the new environment file.
-        new_env = self._make_abs("environment.new")
+        new_env = self._make_abs(environment_filename + ".new")
         write_string(new_env, env_contents)
 
         # Write out the new environment.export file
-        new_env_export = self._make_abs("environment.export.new")
+        new_env_export = self._make_abs(environment_export_filename + ".new")
         write_string(new_env_export, env_export_contents)
 
         # Write out the buildinfo of every active package

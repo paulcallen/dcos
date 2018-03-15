@@ -269,6 +269,8 @@ def extract_archive(archive, dst_dir):
     if archive_type == 'tar':
         if is_windows:
             check_call(["bsdtar", "-xf", archive, "-C", dst_dir])
+            # this badtar does not support '--strip-components=1',
+            _strip_first_path_component(dst_dir)
         else:
             check_call(["tar", "-xf", archive, "--strip-components=1", "-C", dst_dir])
     elif archive_type == 'zip':

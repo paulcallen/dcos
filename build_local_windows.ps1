@@ -14,7 +14,7 @@ if ( ! $tmpdir ) {
 }
 
 # Cleanup from previous build
-rm -recurse "$tmpdir/dcos_build_venv"
+remove-item -recurse -ErrorAction SilentlyContinue "$tmpdir/dcos_build_venv" > $null
 
 # Force Python stdout/err to be unbuffered.
 $env:PYTHONUNBUFFERED="notempty"
@@ -41,9 +41,10 @@ options: `
 python -m venv "$tmpdir/dcos_build_venv"
 . "$tmpdir/dcos_build_venv/Scripts/Activate.ps1"
 
+pip install botocore
+
 # Install the DC/OS tools
 ./prep_local_windows.ps1
 
 # Build a release of DC/OS
 release create $env:USERNAME local_build windows
-

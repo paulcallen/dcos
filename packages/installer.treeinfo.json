@@ -2,6 +2,7 @@
   "exclude": [
     "erts",
     "openstackservice",
+    "python-windows",
     "spartan"
   ],
   "core_package_list": [
