@@ -1,4 +1,6 @@
 package:
+  - path: c:\etc\dcos-metrics-config.yaml
+    content: |
   - path: c:\pkginfo.json
     content: |
       {
@@ -7,6 +9,15 @@ package:
           "PROVIDER": "{{ provider }}"
         }
       }
+  - path: c:\bin\detect_ip.ps1
+    permissions: "0755"
+    content: {{ ip_detect_contents }}
+  - path: c:\bin\detect_ip_public.ps1
+    permissions: "0755"
+    content: {{ ip_detect_public_contents }}
+  - path: c:\bin\detect_ip6.ps1
+    permissions: "0755"
+    content: {{ ip6_detect_contents }}
   - path: c:\etc\mesosphere\setup-flags\repository-url
     permissions: "0644"
     content: |
