@@ -8,6 +8,7 @@ import re
 import shutil
 import socketserver
 import stat
+import tempfile
 import subprocess
 import tempfile
 from contextlib import contextmanager, ExitStack
@@ -98,6 +99,18 @@ def copy_directory(src_path, dst_path):
         subprocess.check_call(['cmd.exe', '/c', 'xcopy', src, dst, '/E', '/B', '/I'])
     else:
         subprocess.check_call(['cp', '-r', src_path, dst_path])
+
+
+def make_symlink(src_path, dst_path):
+    if is_windows:
+        if os.path.isdir(src_path):
+            # create a junction for directories
+            subprocess.check_call(['cmd.exe', '/c', 'mklink', '/J', dst_path, src_path])
+        else:
+            # create hard link for files
+            os.link(src_path, dst_path)
+    else:
+        os.symlink(src_path, dst_path)
 
 
 def variant_str(variant):
@@ -219,7 +232,22 @@ def extract_tarball(path, target):
         make_directory(target)
 
         if is_windows:
-            check_call(['bsdtar', '-xf', path, '-C', target])
+            # need to uncompress if ends with .XZ
+            tmp_filename, tmp_extension = os.path.splitext(path)
+            if tmp_extension == ".xz" or tmp_extension == ".gz":
+                tar_filename = target + os.sep + os.path.basename(tmp_filename)
+                # note 'e' means extract without directory so we can find the enclosed tar
+                check_call(['7z', 'e', path, '-o' + target])
+                delete_intermediate_file = True
+            else:
+                tar_filename = path
+                delete_intermediate_file = False
+                # now untar
+            try:
+                check_call(['7z', 'x', tar_filename, '-o' + target])
+            finally:
+                if delete_intermediate_file:
+                    os.remove(tar_filename)
         else:
             check_call(['tar', '-xf', path, '-C', target])
 
@@ -355,18 +383,35 @@ def expect_fs(folder, contents):
 
 def make_tar(result_filename, change_folder):
     if is_windows:
-        tar_cmd = ["bsdtar"]
+        # on Windows with 7z we need to first tar, then we compress.
+        destination_path = os.path.abspath(change_folder) + os.sep
+        # Create a temporary .tar file
+        tar_filename = os.path.abspath(result_filename) + ".tar"
+        try:
+            tar_cmd = ["7z", "a", "-snh", "-snl", tar_filename,  "*"]
+            proc = subprocess.Popen(tar_cmd, cwd=destination_path)
+            proc.wait()
+            if proc.returncode != 0:
+                raise subprocess.CalledProcessError(proc.returncode, tar_cmd)
+
+            # now we can compress the tar file to the final name
+            tar_cmd = ["7z", "a", os.path.abspath(result_filename),  tar_filename]
+            proc = subprocess.Popen(tar_cmd)
+            proc.wait()
+            if proc.returncode != 0:
+                raise subprocess.CalledProcessError(proc.returncode, tar_cmd)
+        finally:
+            # remove the temporary file
+            os.remove(tar_filename)
+
     else:
         tar_cmd = ["tar", "--numeric-owner", "--owner=0", "--group=0"]
-    if which("pxz"):
-        tar_cmd += ["--use-compress-program=pxz", "-cf"]
-    else:
-        if is_windows:
-            tar_cmd += ["-cjf"]
+        if which("pxz"):
+            tar_cmd += ["--use-compress-program=pxz", "-cf"]
         else:
             tar_cmd += ["-cJf"]
-    tar_cmd += [result_filename, "-C", change_folder, "."]
-    check_call(tar_cmd)
+        tar_cmd += [os.path.abspath(result_filename), "-C", os.path.abspath(change_folder), "."]
+        check_call(tar_cmd)
 
 
 def rewrite_symlinks(root, old_prefix, new_prefix):
@@ -383,7 +428,7 @@ def rewrite_symlinks(root, old_prefix, new_prefix):
                     new_target = os.path.join(new_prefix, target[len(old_prefix) + 1:].lstrip('/'))
                     # Remove the old link and write a new one.
                     os.remove(full_path)
-                    os.symlink(new_target, full_path)
+                    make_symlink(new_target, full_path)
 
 
 def check_forbidden_services(path, services):

@@ -15,7 +15,7 @@ package:
   - path: c:\opt\mesosphere\bin\detect_ip.ps1
     permissions: "0755"
     content: {{ ip_detect_contents }}
-  - path: c:opt\mesosphere\bin\detect_ip_public.ps1
+  - path: c:\opt\mesosphere\bin\detect_ip_public.ps1
     permissions: "0755"
     content: {{ ip_detect_public_contents }}
   - path: c:\opt\mesosphere\bin\detect_ip6.ps1

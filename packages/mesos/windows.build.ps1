@@ -3,32 +3,6 @@ $ErrorActionPreference = "stop"
 $MESOS_DIR = "c:\mesos-tmp"
 $MESOS_BUILD_DIR = Join-Path $MESOS_DIR "build"
 $MESOS_GIT_REPO_DIR = Join-Path $MESOS_DIR "mesos"
-$MESOS_BUILD_OUT_DIR = Join-Path $MESOS_DIR "build-output"
-
-function New-Directory {
-    Param(
-        [Parameter(Mandatory=$true)]
-        [string]$Path,
-        [Parameter(Mandatory=$false)]
-        [switch]$RemoveExisting
-    )
-    if(Test-Path $Path) {
-        if($RemoveExisting) {
-            # Remove if it already exist
-            Remove-Item -Recurse -Force $Path
-        } else {
-            return
-        }
-    }
-    return (New-Item -ItemType Directory -Path $Path)
-}
-
-function New-Environment {
-    Write-Output "Creating new tests environment"
-    New-Directory $MESOS_BUILD_DIR
-    New-Directory $MESOS_BUILD_OUT_DIR -RemoveExisting
-    Write-Output "New tests environment was successfully created"
-}
 
 function Wait-ProcessToFinish {
     Param(
@@ -66,9 +40,17 @@ function Wait-ProcessToFinish {
 function Start-MesosBuild {
     Write-Output "Creating mesos cmake makefiles"
     Push-Location $MESOS_BUILD_DIR
+    # Ninja builds Mesos faster, but we are still ironing out the kinks
+    $buildNinja = $false
     try {
-        $generatorName = "Visual Studio 15 2017 Win64"
-        $parameters = @("$MESOS_GIT_REPO_DIR", "-G", "`"$generatorName`"", "-T", "host=x64", "-DENABLE_LIBEVENT=1")
+        if ($buildNinja) {
+            # options to use Ninja 
+            $parameters = @("$MESOS_GIT_REPO_DIR", "-G", "Ninja", "-DENABLE_LIBEVENT=1", "-DCMAKE_BUILD_TYPE=Release")
+        } else {
+            # msbuild options
+            $generatorName = "Visual Studio 15 2017 Win64"
+            $parameters = @("$MESOS_GIT_REPO_DIR", "-G", "`"$generatorName`"", "-T", "host=x64", "-DENABLE_LIBEVENT=1")
+        }
 
         Wait-ProcessToFinish -ProcessPath "cmake.exe" -ArgumentList $parameters 
     } finally {
@@ -79,22 +61,28 @@ function Start-MesosBuild {
     Write-Output "Started building Mesos binaries"
     Push-Location $MESOS_BUILD_DIR
     try {
-        $parameters =  @("--build", ".", "--config", "Release", "--target", "mesos-agent", "--", "/maxcpucount")
-        Wait-ProcessToFinish -ProcessPath "cmake.exe" -ArgumentList $parameters
+        if ($buildNinja) {
+            # options to use Ninja
+            $parameters = @("--build", ".", "--target", "mesos-agent")
+        } else {
+            # msbuild options
+            $parameters =  @("--build", ".", "--config", "Release", "--target", "mesos-agent", "--", "/maxcpucount")
+        }
+
+        Wait-ProcessToFinish -ProcessPath "cmake.exe" -ArgumentList $parameters 
     } finally {
         Pop-Location
     }
     Write-Output "Mesos binaries were successfully built"
 }
 
-
+# copy source to temporary build directory
 copy-item -Recurse "c:/pkg/src/" -destination "$MESOS_DIR"
 
-New-Environment
+New-Item -ItemType Directory -Path $MESOS_BUILD_DIR > $null
 
 Start-MesosBuild
 
-#Copy build directory to destination directory. 
-#For now we grab the whole lot
-New-Item -itemtype directory "$env:PKG_PATH\bin"
+#Copy result binaries to destination directory. 
+New-Item -itemtype directory "$env:PKG_PATH\bin" > $null
 Copy-Item -Path "$MESOS_BUILD_DIR\src\*" -Destination "$env:PKG_PATH\bin\" -Filter "*.exe"

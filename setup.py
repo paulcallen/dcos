@@ -122,9 +122,9 @@ setup(
             'docker.windows/dcos-builder/setup-cmake.ps1',
             'docker.windows/dcos-builder/setup-erlang.ps1',
             'docker.windows/dcos-builder/setup-git.ps1',
-            'docker.windows/dcos-builder/golang.ps1',
-            'docker.windows/dcos-builder/make.ps1',
-            'docker.windows/dcos-builder/patch.ps1'
+            'docker.windows/dcos-builder/setup-golang.ps1',
+            'docker.windows/dcos-builder/setup-make.ps1',
+            'docker.windows/dcos-builder/setup-patch.ps1'
         ]
     },
     zip_safe=False

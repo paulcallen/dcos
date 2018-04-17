@@ -37,8 +37,7 @@
     "spartan":"windows",
     "teamcity-messages":"windows",
     "windows-install":"windows",
-    "windows-systemctl":"windows",
-    "windows-tar":"windows"
+    "windows-systemctl":"windows"
 },
 "exclude": [
   "avro-cpp",

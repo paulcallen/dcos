@@ -15,7 +15,6 @@ import gen.build_deploy.util as util
 import gen.template
 import gen.util
 import pkgpanda
-import pkgpanda.util
 from gen.calc import (
     calculate_environment_variable,
     CHECK_SEARCH_PATH as DEFAULT_CHECK_SEARCH_PATH,
@@ -127,9 +126,31 @@ chmod {mode} {filename}
 
 if is_windows:
     bash_template = """
-write-output "Arguments: $args"
-write-output "dcos image commit:  {{ dcos_image_commit }}"
-write-output "generation date: {{ generation_date }}"
+#
+# PowerShell script to install DC/OS on a node
+#
+# Usage:
+#
+#   dcos_install.ps1 <role>...
+#
+#
+# Metadata:
+#   dcos image commit: {{ dcos_image_commit }}
+#   generation date: {{ generation_date }}
+#
+# Copyright 2017 Mesosphere, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 function setup_directories() {
     write-output "Creating directories under c:\\etc\\mesosphere"
@@ -868,6 +889,7 @@ def make_installer_docker(variant, variant_info, installer_info):
             'bootstrap_filename': bootstrap_filename,
             'bootstrap_active_filename': bootstrap_active_filename,
             'bootstrap_latest_filename': bootstrap_latest_filename,
+            'bootstrap_id': bootstrap_id,
             'latest_complete_filename': latest_complete_filename,
             'packages_dir': packages_dir})
 
@@ -920,8 +942,8 @@ def make_installer_docker(variant, variant_info, installer_info):
             ['docker', 'save', docker_image_name],
             stdout=open(genconf_tar, 'w'))
         if is_windows:
-            tar_filename = "bsdtar.exe"
-            subprocess.check_call([tar_filename, '-cjf', installer_filename, genconf_tar, script_filename ])
+            tar_filename = "tar.exe"
+            subprocess.check_call([tar_filename, '-cf', os.path.abspath(installer_filename), genconf_tar, script_filename ])
         else:
             tar_filename = "tar"
             subprocess.check_call([tar_filename, 'cvf', '-', genconf_tar], stdout=open(installer_filename, 'a'))

@@ -36,7 +36,7 @@ from pkgpanda.constants import (DCOS_SERVICE_CONFIGURATION_FILE,
 from pkgpanda.exceptions import (InstallError, PackageError, PackageNotFound,
                                  ValidationError)
 from pkgpanda.util import (download, extract_tarball, if_exists, is_windows,
-                           load_json, make_directory, remove_directory, write_json, write_string)
+                           load_json, make_directory, make_symlink, remove_directory, write_json, write_string)
 
 if not is_windows:
     assert 'grp' in sys.modules
@@ -141,7 +141,7 @@ class Systemd:
             # This symlink won't point to the correct file until the copied unit file is moved to its target location
             # during activate_new_unit_files().
             os.remove(wants_symlink_path)
-            os.symlink(systemd_file_path, wants_symlink_path)
+            make_symlink(systemd_file_path, wants_symlink_path)
 
     def remove_unit_files(self):
         if not os.path.exists(self.__unit_directory):
@@ -549,10 +549,7 @@ def symlink_tree(src, dest):
             symlink_tree(src_path, dest_path)
         else:
             try:
-                if is_windows:
-                    os.link(src_path, dest_path)
-                else:
-                    os.symlink(src_path, dest_path)
+                make_symlink(src_path, dest_path)
             except FileNotFoundError as ex:
                 raise ConflictingFile(src_path, dest_path, ex) from ex
 
@@ -881,7 +878,7 @@ class Install:
                                                                                     ex.src))
 
             # Add to the active folder
-            os.symlink(package.path, os.path.join(self._make_abs("active.new"), package.name))
+            make_symlink(package.path, os.path.join(self._make_abs("active.new"), package.name))
 
             # Add to the environment and environment.export contents
 

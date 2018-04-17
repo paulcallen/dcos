@@ -20,8 +20,7 @@
     {"name":"python-retrying","variant":"windows"},
     {"name":"six","variant":"windows"},
     {"name":"teamcity-messages","variant":"windows"},
-    {"name":"windows-systemctl", "variant":"windows"},
-    {"name":"windows-tar", "variant":"windows"}
+    {"name":"windows-systemctl", "variant":"windows"}
   ],
   "sources": {
     "adal": {

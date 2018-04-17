@@ -1,9 +1,0 @@
-{
-  "sources": {
-    "libarchive": {
-      "kind": "url",
-      "url": "https://cfhcable.dl.sourceforge.net/project/gnuwin32/libarchive/2.4.12-1/libarchive-2.4.12-1-setup.exe",
-      "sha1": "3173e77bd3380e0708a831d51bd238ab495ae98a"
-    }
-  }
-}
