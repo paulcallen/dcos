@@ -19,8 +19,6 @@ remove-item -recurse -ErrorAction SilentlyContinue "$tmpdir/dcos_build_venv" > $
 # Force Python stdout/err to be unbuffered.
 $env:PYTHONUNBUFFERED="notempty"
 
-$myhome = $HOME.replace("\", "/")
-
 # Write a DC/OS Release tool configuration file which specifies where the build
 # should be published to. This default config makes the release tool push the
 # release to a folder in the current user's home directory.
@@ -29,7 +27,7 @@ $config_yaml =
 "storage: `
    local: `
     kind: local_path `
-    path: $myhome/dcos-artifacts `
+    path: c:/dcos-artifacts `
 options: `
   preferred: local `
   cloudformation_s3_url: https://s3-us-west-2.amazonaws.com/downloads.dcos.io/dcos"
