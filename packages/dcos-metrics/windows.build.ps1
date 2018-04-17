@@ -1,11 +1,11 @@
-# due to bug in metrics build script we need to disable error action stop or it fails when deleting a directory
-#$ErrorActionPreference = "stop"
+$ErrorActionPreference = "stop"
 . c:\opt\mesosphere\environment.export.ps1
 
 $SRC_DIR = "c:\gopath\src\github.com\dcos\dcos-metrics\"
-new-item -itemtype directory "c:\gopath\src\github.com\dcos"
+new-item -itemtype directory "c:\gopath\src\github.com\dcos" > $null
 copy-item -recurse  "c:\pkg\src\dcos-metrics" -destination "c:\gopath\src\github.com\dcos\"
 Push-Location $SRC_DIR
+new-item -itemtype directory "c:\gopath\src\github.com\dcos\dcos-metrics\build" > $null
 & .\scripts\build.ps1 "collector" "statsd-emitter" "plugins"
 if ($LASTEXITCODE -ne 0)
 {

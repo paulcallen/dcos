@@ -1,9 +1,9 @@
 {
   "sources": {
-    "OpenStackService": {
+    "openstackservice": {
       "kind": "git",
-      "git": "https://github.com/paulcallen/OpenStackService",
-      "ref": "84fe00ba02364a2aeba1bd68197941183973377a",
+      "git": "https://github.com/cloudbase/OpenStackService.git",
+      "ref": "32686a347d394080b57e164a242c647ddf2e166b",
       "ref_origin": "master"
     }
   }

@@ -35,6 +35,7 @@ from pkgpanda.constants import (
     config_dir,
     dcos_config_yaml,
     dcos_services_yaml,
+    systemd_system_root
 )
 from pkgpanda.util import (
     hash_checkout,
@@ -51,7 +52,7 @@ from pkgpanda.util import (
 # List of all roles all templates should have.
 role_names = {"master", "slave", "slave_public"}
 
-role_template = config_dir + '/roles/{}'
+role_template = config_dir + os.sep + 'roles' + os.sep + '{}'
 
 if is_windows:
     CLOUDCONFIG_KEYS = {'runcmd', 'root', 'mounts', 'disk_setup', 'fs_setup', 'bootcmd'}
@@ -138,7 +139,7 @@ def add_units(cloudconfig, services, cloud_init_implementation='coreos'):
         for unit in services:
             unit_name = unit['name']
             if 'content' in unit:
-                write_files_entry = {'path': '/etc/systemd/system/{}'.format(unit_name),
+                write_files_entry = {'path': systemd_system_root + '{}'.format(unit_name),
                                      'content': unit['content'],
                                      'permissions': '0644'}
                 cloudconfig['write_files'].append(write_files_entry)
@@ -232,7 +233,7 @@ def load_templates(template_dict):
         for template_name in template_list:
             result_list.append(gen.template.parse_resources(template_name))
 
-            extra_filename = "gen_extra/" + template_name
+            extra_filename = "gen_extra" + os.sep + template_name
             if os.path.exists(extra_filename):
                 result_list.append(gen.template.parse_str(
                     load_string(extra_filename)))
@@ -311,7 +312,7 @@ def do_gen_package(config, package_filename):
                 fileinfo_drive, fileinfo_path = os.path.splitdrive(file_info['path'])
                 path = tmpdir + fileinfo_path
             else:
-                path = tmpdir + '/' + file_info['path']
+                path = tmpdir + os.sep + file_info['path']
             try:
                 if os.path.dirname(path):
                     os.makedirs(os.path.dirname(path), mode=0o755)

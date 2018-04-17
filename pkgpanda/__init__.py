@@ -125,7 +125,10 @@ class Systemd:
         """
         for unit_name in self.unit_names(new_wants_dir):
             wants_symlink_path = os.path.join(new_wants_dir, unit_name)
-            package_file_path = os.path.realpath(wants_symlink_path)
+            if is_windows:
+                package_file_path = os.path.realpath(wants_symlink_path) if not os.path.islink(wants_symlink_path) else os.readlink(wants_symlink_path)
+            else:
+                package_file_path = os.path.realpath(wants_symlink_path)
             systemd_file_path = os.path.join(self.__base_systemd, unit_name)
             tmp_systemd_file_path = systemd_file_path + self.new_unit_suffix
 
@@ -394,9 +397,13 @@ def requests_fetcher(base_url, id_str, target, work_dir):
     url = base_url + "/packages/{0}/{1}.tar.xz".format(id.name, id_str)
     # TODO(cmaloney): Use a private tmp directory so there is no chance of a user
     # intercepting the tarball + other validation data locally.
-    with tempfile.NamedTemporaryFile(suffix=".tar.xz") as file:
-        download(file.name, url, work_dir, rm_on_error=False)
-        extract_tarball(file.name, target)
+    with tempfile.NamedTemporaryFile(suffix=".tar.xz", delete=False) as file:
+        filename = file.name
+    try:
+        download(filename, url, work_dir, rm_on_error=False)
+        extract_tarball(filename, target)
+    finally:
+        os.remove(filename)
 
 
 class Repository:
@@ -748,7 +755,11 @@ class Install:
 
         ids = set()
         for name in os.listdir(active_dir):
-            package_path = os.path.realpath(os.path.join(active_dir, name))
+            filename = os.path.join(active_dir, name)
+            if is_windows:
+                package_path = os.path.realpath(filename) if not os.path.islink(filename) else os.readlink(filename)
+            else:
+                package_path = os.path.realpath(filename)
 
             # NOTE: We don't validate the id here because we want to be able to
             # cope if there is something invalid in the current active dir.

@@ -39,9 +39,9 @@
     "windows-install":"windows",
     "windows-systemctl":"windows",
     "windows-tar":"windows"
-  },
-  "exclude": [
-    "avro-cpp",
+},
+"exclude": [
+  "avro-cpp",
     "boost-libs",
     "check-time",
     "cni",
@@ -81,6 +81,7 @@
     "strace",
     "toybox"
   ],
-  "bootstrap_package_list": ["dcos-image"]
+  "core_package_list": [
+    "dcos-image"
+    ]
 }
-

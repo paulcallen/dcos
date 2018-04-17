@@ -4,8 +4,10 @@
     "erts",
     "openstackservice",
     "python-windows",
-    "spartan"
-  ],
+    "spartan",
+    "windows-systemctl",
+    "windows-tar"
+],
   "bootstrap_package_list": ["dcos-image"]
 }
 

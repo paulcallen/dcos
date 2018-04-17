@@ -23,9 +23,15 @@ from gen.calc import (
 )
 from gen.internals import Source
 from pkgpanda.constants import (
-    cloud_config_yaml, dcos_services_yaml, install_root
+    cloud_config_yaml, dcos_services_yaml, install_root, systemd_system_root
 )
-from pkgpanda.util import copy_directory, copy_file, is_windows, logger, make_directory
+from pkgpanda.util import copy_directory, copy_file, is_windows, logger, make_directory, remove_file
+
+
+if is_windows:
+    script_extension = 'ps1'
+else:
+    script_extension = 'sh'
 
 
 def calculate_custom_check_bins_provided(custom_check_bins_dir):
@@ -74,6 +80,11 @@ def validate_custom_check_bins_dir(custom_check_bins_dir):
             assert entry.is_file(), '{} must not contain any subdirectories'.format(custom_check_bins_dir)
 
 
+if is_windows:
+    ip_detect = "ip-detect.ps1"
+else:
+    ip_detect = "ip-detect"
+
 onprem_source = Source(entry={
     'validate': [
         validate_custom_check_bins_dir,
@@ -82,7 +93,7 @@ onprem_source = Source(entry={
     'default': {
         'platform': 'onprem',
         'resolvers': '["8.8.8.8", "8.8.4.4"]',
-        'ip_detect_filename': 'genconf/ip-detect',
+        'ip_detect_filename': ip_detect ,
         'ip6_detect_filename': '',
         'bootstrap_id': lambda: calculate_environment_variable('BOOTSTRAP_ID'),
         'enable_docker_gc': 'false'
@@ -100,7 +111,13 @@ onprem_source = Source(entry={
 })
 
 
-file_template = """mkdir -p `dirname {filename}`
+if is_windows:
+    file_template = """$filename = split-path -parent "{filename}"
+new-item -itemtype directory -force $filename
+"{content}" | out-file -encoding ascii {filename}
+"""
+else:
+    file_template = """mkdir -p `dirname {filename}`
 cat <<'EOF' > "{filename}"
 {content}
 EOF
@@ -108,7 +125,71 @@ chmod {mode} {filename}
 
 """
 
-bash_template = """#!/bin/bash
+if is_windows:
+    bash_template = """
+write-output "Arguments: $args"
+write-output "dcos image commit:  {{ dcos_image_commit }}"
+write-output "generation date: {{ generation_date }}"
+
+function setup_directories() {
+    write-output "Creating directories under c:\\etc\\mesosphere"
+    new-item -itemtype directory -force "c:\\etc\\mesosphere\\roles" > $null
+    new-item -itemtype directory -force "c:\\etc\\mesosphere\\setup-flags" > $null
+}
+
+Function Touch-File($file)
+{
+    if($file -eq $null) {
+        throw "No filename supplied"
+    }
+
+    if(Test-Path $file)
+    {
+        (Get-ChildItem $file).LastWriteTime = Get-Date
+    }
+    else
+    {
+        $null | out-file -encoding ascii $file
+    }
+}
+
+function setup_dcos_roles 
+{
+    foreach ($role in $ROLES)
+    {
+        echo "Creating role file for ${role}"
+        Touch-File "c:\\etc\\mesosphere\\roles\\$role"
+    }
+}
+
+# Set DC/OS machine configuration
+function configure_dcos
+{
+write-output 'Configuring DC/OS'
+{{ setup_flags }}
+}
+
+# Install the DC/OS services, start DC/OS
+function setup_and_start_services
+{
+write-output 'Setting and starting DC/OS'
+{{ setup_services }}
+}
+
+function dcos_install
+{
+    setup_directories
+    setup_dcos_roles
+    configure_dcos
+    setup_and_start_services
+}
+
+$ROLES = $args
+dcos_install
+
+"""
+else:
+    bash_template = """#!/bin/bash
 #
 # BASH script to install DC/OS on a node
 #
@@ -621,7 +702,16 @@ main
 
 """
 
-systemctl_no_block_service = """
+if is_windows:
+    systemctl_no_block_service = """
+if (( $SYSTEMCTL_NO_BLOCK -eq 1 )) {{
+    systemctl {command} {name} --no-block
+}} else {{
+    systemctl {command} {name}
+}}
+"""
+else:
+    systemctl_no_block_service = """
 if (( $SYSTEMCTL_NO_BLOCK == 1 )); then
     systemctl {command} {name} --no-block
 else
@@ -670,7 +760,7 @@ def make_bash(gen_out) -> None:
         if 'content' not in service:
             continue
         setup_services += file_template.format(
-            filename='/etc/systemd/system/{}'.format(service['name']),
+            filename=systemd_system_root + '{}'.format(service['name']),
             content=service['content'],
             mode='0644',
             owner='root',
@@ -701,7 +791,7 @@ def make_bash(gen_out) -> None:
         'mesos_agent_work_dir': gen_out.arguments['mesos_agent_work_dir']})
 
     # Output the dcos install script
-    install_script_filename = 'dcos_install.sh'
+    install_script_filename = 'dcos_install.' + script_extension
     pkgpanda.util.write_string(install_script_filename, bash_script)
     gen_out.utils.add_channel_artifact(install_script_filename)
 
@@ -733,7 +823,12 @@ def make_installer_docker(variant, variant_info, installer_info):
 
     image_version = util.dcos_image_commit[:18] + '-' + bootstrap_id[:18]
     genconf_tar = "dcos-genconf." + image_version + ".tar"
-    installer_filename = "packages/cache/dcos_generate_config." + pkgpanda.util.variant_prefix(variant) + "sh"
+    if is_windows:
+        installer_filename = ("packages/cache/dcos_generate_config." +
+                            pkgpanda.util.variant_prefix(variant) + "tar.xz")
+    else:
+        installer_filename = ("packages/cache/dcos_generate_config." +
+                            pkgpanda.util.variant_prefix(variant) + "sh")
     bootstrap_filename = bootstrap_id + ".bootstrap.tar.xz"
     bootstrap_active_filename = bootstrap_id + ".active.json"
     installer_bootstrap_filename = installer_info['bootstrap'] + '.bootstrap.tar.xz'
@@ -761,7 +856,14 @@ def make_installer_docker(variant, variant_info, installer_info):
                 dest_path(base_name),
                 pkg_resources.resource_string(__name__, 'bash/' + base_name + '.in').decode().format(**format_args))
 
-        fill_template('Dockerfile', {
+        if is_windows:
+            dockerfile_filename = 'Dockerfile.windows'
+            installer_internal_wrapper = 'installer_internal_wrapper.ps1'
+        else:
+            dockerfile_filename = 'Dockerfile'
+            installer_internal_wrapper = 'installer_internal_wrapper'
+
+        fill_template(dockerfile_filename, {
             'installer_bootstrap_filename': installer_bootstrap_filename,
             'bootstrap_filename': bootstrap_filename,
             'bootstrap_active_filename': bootstrap_active_filename,
@@ -769,13 +871,13 @@ def make_installer_docker(variant, variant_info, installer_info):
             'latest_complete_filename': latest_complete_filename,
             'packages_dir': packages_dir})
 
-        fill_template('installer_internal_wrapper', {
+        fill_template(installer_internal_wrapper, {
             'variant': pkgpanda.util.variant_str(variant),
             'bootstrap_id': bootstrap_id,
             'dcos_image_commit': util.dcos_image_commit})
 
         if not is_windows:
-            subprocess.check_call(['chmod', '+x', dest_path('installer_internal_wrapper')])
+            subprocess.check_call(['chmod', '+x', dest_path(installer_internal_wrapper)])
 
         # TODO(cmaloney) make this use make_bootstrap_artifacts / that set
         # rather than manually keeping everything in sync
@@ -795,23 +897,41 @@ def make_installer_docker(variant, variant_info, installer_info):
             make_directory(dest_path('gen_extra'))
 
         print("Building docker container in " + build_dir)
-        subprocess.check_call(['docker', 'build', '-t', docker_image_name, build_dir])
+        subprocess.check_call(['docker', 'build', '-t', docker_image_name, '-f', 
+                              build_dir + os.sep + dockerfile_filename, build_dir])
 
         print("Building", installer_filename)
+
+        if is_windows:
+            eof_marker = ''
+            script_filename = "install_bootstrap_windows.ps1"
+        else:
+            eof_marker = '\n#EOF#\n'
+            script_filename = installer_filename
+
         pkgpanda.util.write_string(
-            installer_filename,
-            pkg_resources.resource_string(__name__, 'bash/dcos_generate_config.sh.in').decode().format(
+            script_filename,
+            pkg_resources.resource_string(__name__,
+                                          'bash/dcos_generate_config.' + script_extension + '.in').decode().format(
                 genconf_tar=genconf_tar,
                 docker_image_name=docker_image_name,
-                variant=variant) + '\n#EOF#\n')
+                variant=variant) + eof_marker)
         subprocess.check_call(
             ['docker', 'save', docker_image_name],
             stdout=open(genconf_tar, 'w'))
-        subprocess.check_call(['tar', 'cvf', '-', genconf_tar], stdout=open(installer_filename, 'a'))
-        subprocess.check_call(['chmod', '+x', installer_filename])
+        if is_windows:
+            tar_filename = "bsdtar.exe"
+            subprocess.check_call([tar_filename, '-cjf', installer_filename, genconf_tar, script_filename ])
+        else:
+            tar_filename = "tar"
+            subprocess.check_call([tar_filename, 'cvf', '-', genconf_tar], stdout=open(installer_filename, 'a'))
+        if not is_windows:
+            subprocess.check_call(['chmod', '+x', installer_filename])
 
         # Cleanup
-        subprocess.check_call(['rm', genconf_tar])
+        remove_file(genconf_tar)
+        if is_windows:
+            remove_file(script_filename)
 
     return installer_filename
 
@@ -837,7 +957,8 @@ def do_create(tag, build_name, reproducible_artifact_path, commit, variant_argum
             with logger.scope("Building installer for variant: {}".format(variant_name)):
 
                 yield {
-                    'channel_path': 'dcos_generate_config.{}sh'.format(pkgpanda.util.variant_prefix(variant)),
+                    'channel_path': 'dcos_generate_config.{}{}'.format(pkgpanda.util.variant_prefix(variant),
+                                                                       script_extension),
                     'local_path': make_installer_docker(variant, all_completes[variant],
                                                         all_completes[bootstrap_installer_name])
                 }

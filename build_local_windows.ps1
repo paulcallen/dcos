@@ -47,4 +47,4 @@ pip install botocore
 ./prep_local_windows.ps1
 
 # Build a release of DC/OS
-release create $env:USERNAME local_build windows
+release create $env:USERNAME local_build windows windows.installer

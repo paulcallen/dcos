@@ -64,7 +64,9 @@ setup(
         'retrying',
         'schema',
         'keyring==9.1',  # FIXME: pin keyring to prevent dbus dep
-        'teamcity-messages'],
+        'teamcity-messages',
+        'pywin32-ctypes;platform_system=="Windows"',
+        'colorama;platform_system=="Windows"'],
     entry_points={
         'console_scripts': [
             'release=release:main',
@@ -105,14 +107,24 @@ setup(
             'azure/templates/azure.html',
             'azure/templates/azuredeploy.json',
             'build_deploy/bash/dcos_generate_config.sh.in',
+            'build_deploy/bash/dcos_generate_config.ps1.in',
             'build_deploy/bash/Dockerfile.in',
+            'build_deploy/bash/Dockerfile.windows.in',
             'build_deploy/bash/installer_internal_wrapper.in',
+            'build_deploy/bash/installer_internal_wrapper.ps1.in',
             'build_deploy/bash/dcos-launch.spec',
             'coreos-aws/cloud-config.yaml',
             'coreos/cloud-config.yaml'
         ] + get_advanced_templates(),
         'pkgpanda': [
-            'docker/dcos-builder/Dockerfile'
+            'docker/dcos-builder/Dockerfile',
+            'docker.windows/dcos-builder/Dockerfile',
+            'docker.windows/dcos-builder/setup-cmake.ps1',
+            'docker.windows/dcos-builder/setup-erlang.ps1',
+            'docker.windows/dcos-builder/setup-git.ps1',
+            'docker.windows/dcos-builder/golang.ps1',
+            'docker.windows/dcos-builder/make.ps1',
+            'docker.windows/dcos-builder/patch.ps1'
         ]
     },
     zip_safe=False

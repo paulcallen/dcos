@@ -3,8 +3,9 @@
     "erts",
     "openstackservice",
     "python-windows",
-    "spartan"
-  ],
+    "spartan",
+    "windows-systemctl",
+    "windows-tar"],
   "core_package_list": [
     "dcos-image"
   ]

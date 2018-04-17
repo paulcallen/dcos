@@ -35,12 +35,15 @@ import schema
 import yaml
 
 import gen.internals
+import pkgpanda.exceptions
+from pkgpanda import PackageId
+from pkgpanda.constants import install_root, profile_dir
+from pkgpanda.util import hash_checkout, hash_str
 
 
 DCOS_VERSION = '1.12-dev'
 
 CHECK_SEARCH_PATH = '/opt/mesosphere/bin:/usr/bin:/bin:/sbin'
-
 
 def type_str(value):
     return type(value).__name__
@@ -1107,12 +1110,12 @@ entry = {
         'cluster_docker_registry_enabled': calculate_cluster_docker_registry_enabled,
         'has_master_external_loadbalancer':
             lambda master_external_loadbalancer: calculate_set(master_external_loadbalancer),
-        'profile_symlink_source': '/opt/mesosphere/bin/add_dcos_path.sh',
-        'profile_symlink_target': '/etc/profile.d/dcos.sh',
+        'profile_symlink_source': install_root + os.sep + 'bin' + os.sep + 'add_dcos_path.sh',
+        'profile_symlink_target': profile_dir + os.sep + 'dcos.sh',
         'profile_symlink_target_dir': calculate_profile_symlink_target_dir,
         'fair_sharing_excluded_resource_names': calculate_fair_sharing_excluded_resource_names,
         'check_config_contents': calculate_check_config_contents,
-        'check_ld_library_path': '/opt/mesosphere/lib',
+        'check_ld_library_path': install_root + os.sep + 'lib',
         'adminrouter_tls_version_override': calculate_adminrouter_tls_version_override,
         'adminrouter_tls_cipher_override': calculate_adminrouter_tls_cipher_override,
         'licensing_enabled': 'false',
