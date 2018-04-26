@@ -2,8 +2,8 @@
   "sources": {
     "openstackservice": {
       "kind": "git",
-      "git": "https://github.com/cloudbase/OpenStackService.git",
-      "ref": "32686a347d394080b57e164a242c647ddf2e166b",
+      "git": "https://github.com/yakman2020/OpenStackService.git",
+      "ref": "f21fa2ec17347e7bd17e9f110597985bb0292e87",
       "ref_origin": "master"
     }
   }
