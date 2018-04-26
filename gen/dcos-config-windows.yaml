@@ -14,16 +14,25 @@ package:
       }
   - path: \bin\detect_ip.ps1
     permissions: "0755"
-    content: |
-      {{ ip_detect_contents }}
+    content: '
+      $headers = @{"Metadata" = "true"}
+      $r = Invoke-WebRequest -headers $headers "http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/privateIpAddress?api-version=2017-04-02&format=text" -UseBasicParsing
+      $r.Content
+    '
   - path: \bin\detect_ip_public.ps1
     permissions: "0755"
-    content: |
-      {{ ip_detect_public_contents }}
+    content: '
+      $headers = @{"Metadata" = "true"}
+      $r = Invoke-WebRequest -headers $headers "http://169.254.169.254/latest/meta-data/public-ipv4" -UseBasicParsing
+      $r.Content
+    '
   - path: \bin\detect_ip6.ps1
     permissions: "0755"
-    content: |
-      {{ ip6_detect_contents }}
+    content: '
+      $headers = @{"Metadata" = "true"}
+      $r = Invoke-WebRequest -headers $headers "http://169.254.169.254/metadata/instance/network/interface/0/ipv6/ipAddress/0/privateIpAddress?api-version=2017-04-02&format=text" -UseBasicParsing
+      $r.Content
+    '
   - path: \etc\license.txt
     permissions: "0600"
     content: {{ license_key_contents }}

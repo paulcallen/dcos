@@ -387,6 +387,7 @@ def make_tar(result_filename, change_folder):
         destination_path = os.path.abspath(change_folder) + os.sep
         # Create a temporary .tar file
         tar_filename = os.path.abspath(result_filename) + ".tar"
+        delete_file = False
         try:
             tar_cmd = ["7z", "a", "-snh", "-snl", tar_filename,  "*"]
             proc = subprocess.Popen(tar_cmd, cwd=destination_path)
@@ -395,6 +396,7 @@ def make_tar(result_filename, change_folder):
                 raise subprocess.CalledProcessError(proc.returncode, tar_cmd)
 
             # now we can compress the tar file to the final name
+            delete_file = True
             tar_cmd = ["7z", "a", os.path.abspath(result_filename),  tar_filename]
             proc = subprocess.Popen(tar_cmd)
             proc.wait()
@@ -402,7 +404,8 @@ def make_tar(result_filename, change_folder):
                 raise subprocess.CalledProcessError(proc.returncode, tar_cmd)
         finally:
             # remove the temporary file
-            os.remove(tar_filename)
+            if delete_file:
+                os.remove(tar_filename)
 
     else:
         tar_cmd = ["tar", "--numeric-owner", "--owner=0", "--group=0"]
