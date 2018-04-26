@@ -1,10 +1,10 @@
 package:
-  - path: c:\etc\dcos-metrics-config.yaml
+  - path: \etc\dcos-metrics-config.yaml
     content: |
-  - path: c:\etc\dcos-metrics.env
+  - path: \etc\dcos-metrics.env
     content: |
       DCOS_METRICS_CONFIG_PATH="c:\opt\mesosphere\etc\dcos-metrics-config.yam"l
-  - path: c:\pkginfo.json
+  - path: \pkginfo.json
     content: |
       {
         "environment": {
@@ -12,22 +12,25 @@ package:
           "PROVIDER": "{{ provider }}"
         }
       }
-  - path: c:\opt\mesosphere\bin\detect_ip.ps1
+  - path: \bin\detect_ip.ps1
     permissions: "0755"
-    content: {{ ip_detect_contents }}
-  - path: c:\opt\mesosphere\bin\detect_ip_public.ps1
+    content: |
+      {{ ip_detect_contents }}
+  - path: \bin\detect_ip_public.ps1
     permissions: "0755"
-    content: {{ ip_detect_public_contents }}
-  - path: c:\opt\mesosphere\bin\detect_ip6.ps1
+    content: |
+      {{ ip_detect_public_contents }}
+  - path: \bin\detect_ip6.ps1
     permissions: "0755"
-    content: {{ ip6_detect_contents }}
-  - path: c:\etc\license.txt
+    content: |
+      {{ ip6_detect_contents }}
+  - path: \etc\license.txt
     permissions: "0600"
     content: {{ license_key_contents }}
-  - path: c:\etc_master\master_count
+  - path: \etc_master\master_count
     content: |
       {{ num_masters }}
-  - path: c:\etc_slave\dcos-dns.json
+  - path: \etc_slave\dcos-dns.json
     content: |
       {
         "upstream_resolvers": {{ resolvers }},
@@ -37,7 +40,7 @@ package:
         "bind_ip_blacklist": {{ dns_bind_ip_blacklist_json }},
         "forward_zones": {{ dns_forward_zones }}
       }
-  - path: c:\etc_slave_public\dcos-dns.json
+  - path: \etc_slave_public\dcos-dns.json
     content: |
       {
         "upstream_resolvers": {{ resolvers }},
@@ -47,7 +50,7 @@ package:
         "bind_ip_blacklist": {{ dns_bind_ip_blacklist_json }},
         "forward_zones": {{ dns_forward_zones }}
       }
-  - path: c:\etc\mesos-slave-common
+  - path: \etc\mesos-slave-common
     content: |
       MESOS_MASTER="zk://zk-1.zk:2181,zk-2.zk:2181,zk-3.zk:2181,zk-4.zk:2181,zk-5.zk:2181/mesos"
       MESOS_CONTAINERIZERS="docker,mesos"
@@ -77,45 +80,45 @@ package:
       MESOS_DEFAULT_CONTAINER_DNS="file:///opt/mesosphere/etc/mesos-slave-dns.json"
       MESOS_IMAGE_GC_CONFIG="file:///opt/mesosphere/etc/mesos-slave-image-gc-config.json"
       GLOG_drop_log_memory="false"
-  - path: c:\etc\docker_credentials
+  - path: \etc\docker_credentials
     permissions: "0600"
     content: |
         {{ cluster_docker_credentials }}
-  - path: c:\etc\mesos-slave
+  - path: \etc\mesos-slave
     content: |
       MESOS_RESOURCES=[{"name":"ports","type":"RANGES","ranges": {"range": [{"begin": 1025, "end": 2180},{"begin": 2182, "end": 3887},{"begin": 3889, "end": 5049},{"begin": 5052, "end": 8079},{"begin": 8082, "end": 8180},{"begin": 8182, "end": 32000}]}}]
-  - path: c:\etc\mesos-slave-public
+  - path: \etc\mesos-slave-public
     content: |
       MESOS_RESOURCES=[{"name":"ports","type":"RANGES","ranges": {"range": [{"begin": 1, "end": 21},{"begin": 23, "end": 5050},{"begin": 5052, "end": 32000}]}}]
       MESOS_DEFAULT_ROLE=slave_public
       MESOS_ATTRIBUTES=public_ip:true
-  - path: c:\etc\mesos-executor-environment.json
+  - path: \etc\mesos-executor-environment.json
     content: |
       {
         "PATH": "c:\usr\bin;c:\bin",
         "SHELL": "powershell.exe",
         "LIBPROCESS_NUM_WORKER_THREADS": "8"
       }
-  - path: c:\etc\dcos-diagnostics-runner-config.json
+  - path: \etc\dcos-diagnostics-runner-config.json
     content: {{ check_config_contents }}
-  - path: c:\etc\dcos-diagnostics.env
+  - path: \etc\dcos-diagnostics.env
     content: |
       DCOS_DIAGNOSTICS_CONFIG_PATH=c:\opt\mesosphere\etc\dcos-diagnostics-config.json
-  - path: c:\etc_slave\dcos-diagnostics-config.json
+  - path: \etc_slave\dcos-diagnostics-config.json
     content: |
       {
         "role": "agent",
         "endpoint-config": "c:\opt\mesosphere\etc\dcos-diagnostics-endpoint-config.json",
         "agent-port": 61001
       }
-  - path: c:\etc_slave_public\dcos-diagnostics-config.json
+  - path: \etc_slave_public\dcos-diagnostics-config.json
     content: |
       {
         "role": "agent_public",
         "endpoint-config": "c:\opt\mesosphere\etc\dcos-diagnostics-endpoint-config.json",
         "agent-port": 61001
       }
-  - path: c:\etc\dcos-diagnostics-endpoint-config.json
+  - path: \etc\dcos-diagnostics-endpoint-config.json
     content: |
         {
           "HTTPEndpoints": [
@@ -321,28 +324,28 @@ package:
               }
           ]
         }
-  - path: c:\etc\master_list
+  - path: \etc\master_list
     content: |
       {{ master_list }}
-  - path: c:\etc\extra_master_addresses
+  - path: \etc\extra_master_addresses
     content: |
-  - path: c:\etc\user.config.yaml
+  - path: \etc\user.config.yaml
     content: |
 {{ config_yaml }}
-  - path: c:\etc\user.config.full.yaml
+  - path: \etc\user.config.full.yaml
     permissions: "0600"
     content: |
 {{ config_yaml_full }}
-  - path: c:\etc\expanded.config.json
+  - path: \etc\expanded.config.json
     content: |
 {{ expanded_config }}
-  - path: c:\etc\expanded.config.full.json
+  - path: \etc\expanded.config.full.json
     permissions: "0600"
     content: |
 {{ expanded_config_full }}
 {% switch fault_domain_enabled %}
 {% case "true" %}
-  - path: c:\bin\detect_fault_domain
+  - path: \bin\detect_fault_domain
     permissions: "0755"
     content: {{ fault_domain_detect_contents }}
 {% case "false" %}

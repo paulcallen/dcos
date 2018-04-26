@@ -529,11 +529,11 @@ def build_late_package(late_files, config_id, provider):
     # Add a empty pkginfo.json to the late package after validating there
     # isn't already one.
     for file_info in late_files:
-        assert file_info['path'] != '/pkginfo.json'
-        assert is_absolute_path(file_info['path'])
+        assert file_info['path'] != (os.sep + 'pkginfo.json')
+        assert file_info['path'].startswith(os.sep)
 
     late_files.append({
-        "path": "/pkginfo.json",
+        "path": os.sep + "pkginfo.json",
         "content": "{}"})
 
     return {
@@ -737,8 +737,9 @@ def generate(
         # late_variables will be resolved by the service handling the cloud
         # config (e.g. Amazon CloudFormation). The rendered late config file
         # on a cluster node's filesystem will contain the final values.
+        _, late_config_path = os.path.splitdrive(os.path.abspath(config_dir + '/setup-flags/late-config.yaml'))    
         rendered_templates[cloud_config_yaml]['root'].append({
-            'path': config_dir + '/setup-flags/late-config.yaml',
+            'path': late_config_path,
             'permissions': '0644',
             'owner': 'root',
             # TODO(cmaloney): don't prettyprint to save bytes.
@@ -778,7 +779,7 @@ def generate(
     cc['write_files'] = []
     # Do the transform
     for item in cc_root:
-        assert is_absolute_path(item['path'])
+        assert item['path'].startswith(os.sep)
         cc['write_files'].append(item)
     rendered_templates[cloud_config_yaml] = cc
 

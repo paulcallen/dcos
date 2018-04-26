@@ -77,8 +77,11 @@ setup(
     },
     package_data={
         'gen': [
+            'ip-detect/aws.ps1',
             'ip-detect/aws.sh',
+            'ip-detect/aws6.ps1',
             'ip-detect/aws6.sh',
+            'ip-detect/aws_public.ps1',
             'ip-detect/aws_public.sh',
             'ip-detect/azure.sh',
             'ip-detect/azure.ps1',
