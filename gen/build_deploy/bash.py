@@ -190,6 +190,51 @@ write-output 'Configuring DC/OS'
 {{ setup_flags }}
 }
 
+function download_dcos
+{
+    # install 7zip in order to unpack the bootstrap node
+    new-item -itemtype directory "c:\\bootstrap_tmp"
+    & curl.exe  -o c:\\bootstrap_tmp\\7z1801-x64.msi https://7-zip.org/a/7z1801-x64.msi
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to download 7zip"
+    }
+
+    new-item -itemtype directory "c:\\7zip"
+    & cmd.exe /c start /wait msiexec /i c:\\bootstrap_tmp\\7z1801-x64.msi INSTALLDIR="c:\\7zip" /qn
+    if ($LASTEXITCODE -ne 0) {
+        throw "failed to install 7zip"
+    }
+
+    remove-item c:\\bootstrap_tmp\\7z1801-x64.msi
+
+    # pull down the bootstrap tarball
+    & curl.exe --keepalive-time 2 -fLsSv --retry 20 -Y 100000 -y 60 -o c:\\bootstrap_tmp\\bootstrap.tar.xz {{ bootstrap_url }}/bootstrap/{{ bootstrap_id }}.bootstrap.tar.xz
+    if ($LASTEXITCODE -ne 0) {
+        throw "failed to download bootstrap tarball"
+    }
+
+    #extract the tarball
+    new-item -itemtype directory c:\\opt\\mesosphere
+
+    & c:\\7zip\\7z e c:\\bootstrap_tmp\\bootstrap.tar.xz -oc:\\bootstrap_tmp
+    if ($LASTEXITCODE -ne 0) {
+        throw "failed to uncompress bootstrap"
+    }
+    & c:\\7zip\\7z x c:\\bootstrap_tmp\\{{ bootstrap_id }}.bootstrap.tar -oc:\\opt\\mesosphere
+    if ($LASTEXITCODE -ne 0) {
+        throw "failed to untar bootstrap"
+    }
+    
+    # uninstall the temporary 7zip
+    & cmd.exe /c start /wait msiexec /x c:\\bootstrap_tmp\\7z1801-x64.msi 
+    if ($LASTEXITCODE -ne 0) {
+        throw "failed to uninstall 7zip"
+    }
+
+    # remove temporary bootstrap images
+    remove-item -force -recurse c:\\bootstrap_tmp
+}
+
 # Install the DC/OS services, start DC/OS
 function setup_and_start_services
 {
@@ -726,9 +771,9 @@ main
 if is_windows:
     systemctl_no_block_service = """
 if (( $SYSTEMCTL_NO_BLOCK -eq 1 )) {{
-    systemctl {command} {name} --no-block
+    c:\\opt\\mesosphere\\bin\\systemctl {command} {name} --no-block
 }} else {{
-    systemctl {command} {name}
+    c:\\opt\\mesosphere\\bin\\systemctl {command} {name}
 }}
 """
 else:

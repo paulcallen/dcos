@@ -36,7 +36,7 @@
     "six":"windows",
     "spartan":"windows",
     "teamcity-messages":"windows",
-    "windows-install":"windows",
+    "windows-7zip":"windows",
     "windows-systemctl":"windows"
   },
   "exclude": [

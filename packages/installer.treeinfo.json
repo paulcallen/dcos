@@ -4,6 +4,7 @@
     "openstackservice",
     "python-windows",
     "spartan",
+    "windows-7zip",
     "windows-systemctl"
   ],
   "core_package_list": [

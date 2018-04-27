@@ -5,6 +5,7 @@
     "openstackservice",
     "python-windows",
     "spartan",
+    "windows-7zip",
     "windows-systemctl"
 ],
   "bootstrap_package_list": ["dcos-image"]

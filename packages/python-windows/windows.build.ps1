@@ -18,6 +18,8 @@ if ($p.ExitCode -ne 0) {
 }
 
 # Copy the directory structure to the final destination
+Rename-Item $tmpdir\LICENSE.txt $tmpdir\python_LICENSE.txt
+Rename-Item $tmpdir\NEWS.txt $tmpdir\python_NEWS.txt
 New-Item -ItemType Directory -Force "$env:PKG_PATH\bin\" > $null
 New-Item -ItemType Directory -Force "$env:PKG_PATH\lib\" > $null
 copy-item -force -recurse -path "$tmpdir\*" -destination "$env:PKG_PATH\bin\"
