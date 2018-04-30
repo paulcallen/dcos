@@ -156,6 +156,7 @@ function setup_directories() {
     write-output "Creating directories under c:\\etc\\mesosphere"
     new-item -itemtype directory -force "c:\\etc\\mesosphere\\roles" > $null
     new-item -itemtype directory -force "c:\\etc\\mesosphere\\setup-flags" > $null
+    new-item -itemtype directory -force "c:\\tmp" > $null
 }
 
 Function Touch-File($file)
@@ -190,8 +191,19 @@ write-output 'Configuring DC/OS'
 {{ setup_flags }}
 }
 
-function download_dcos
+function download_dependencies
 {
+    new-item -itemtype directory c:\\bootstrap_tmp > $null
+    & curl.exe  -o c:\\bootstrap_tmp\\openstackservice.exe https://dcosdevstorage.blob.core.windows.net/tmp/OpenStackService.exe
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to download openstackservice.exe"
+    }
+    & curl.exe  -o c:\\bootstrap_tmp\\systemctl.exe https://dcosdevstorage.blob.core.windows.net/tmp/systemctl.exe
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to download systemctl.exe"
+    }
+    $env:path+=";c:\\bootstrap_tmp"
+
     # install 7zip in order to unpack the bootstrap node
     new-item -itemtype directory "c:\\bootstrap_tmp"
     & curl.exe  -o c:\\bootstrap_tmp\\7z1801-x64.msi https://7-zip.org/a/7z1801-x64.msi
@@ -204,35 +216,9 @@ function download_dcos
     if ($LASTEXITCODE -ne 0) {
         throw "failed to install 7zip"
     }
+    $env:path+=";c:\\7zip"
 
     remove-item c:\\bootstrap_tmp\\7z1801-x64.msi
-
-    # pull down the bootstrap tarball
-    & curl.exe --keepalive-time 2 -fLsSv --retry 20 -Y 100000 -y 60 -o c:\\bootstrap_tmp\\bootstrap.tar.xz {{ bootstrap_url }}/bootstrap/{{ bootstrap_id }}.bootstrap.tar.xz
-    if ($LASTEXITCODE -ne 0) {
-        throw "failed to download bootstrap tarball"
-    }
-
-    #extract the tarball
-    new-item -itemtype directory c:\\opt\\mesosphere
-
-    & c:\\7zip\\7z e c:\\bootstrap_tmp\\bootstrap.tar.xz -oc:\\bootstrap_tmp
-    if ($LASTEXITCODE -ne 0) {
-        throw "failed to uncompress bootstrap"
-    }
-    & c:\\7zip\\7z x c:\\bootstrap_tmp\\{{ bootstrap_id }}.bootstrap.tar -oc:\\opt\\mesosphere
-    if ($LASTEXITCODE -ne 0) {
-        throw "failed to untar bootstrap"
-    }
-    
-    # uninstall the temporary 7zip
-    & cmd.exe /c start /wait msiexec /x c:\\bootstrap_tmp\\7z1801-x64.msi 
-    if ($LASTEXITCODE -ne 0) {
-        throw "failed to uninstall 7zip"
-    }
-
-    # remove temporary bootstrap images
-    remove-item -force -recurse c:\\bootstrap_tmp
 }
 
 # Install the DC/OS services, start DC/OS
@@ -246,6 +232,7 @@ function dcos_install
 {
     setup_directories
     setup_dcos_roles
+    download_dependencies
     configure_dcos
     setup_and_start_services
 }
@@ -771,9 +758,9 @@ main
 if is_windows:
     systemctl_no_block_service = """
 if (( $SYSTEMCTL_NO_BLOCK -eq 1 )) {{
-    c:\\opt\\mesosphere\\bin\\systemctl {command} {name} --no-block
+    systemctl {command} {name} --no-block
 }} else {{
-    c:\\opt\\mesosphere\\bin\\systemctl {command} {name}
+    systemctl {command} {name}
 }}
 """
 else:
