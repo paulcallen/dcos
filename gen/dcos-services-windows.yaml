@@ -9,10 +9,10 @@
     Type=oneshot
     StandardOutput=journal+console
     StandardError=journal+console
-    ExecStartPre=cmd.exe /c mkdir c:\tmp
+    ExecStartPre=cmd.exe /c mkdir c:\{{ bootstrap_tmp_dir }}
     ExecStartPre=curl.exe --keepalive-time 2 -fLsSv --retry 20 -Y 100000 -y 60 -o c:\{{ bootstrap_tmp_dir }}\bootstrap.tar.xz {{ bootstrap_url }}/bootstrap/{{ bootstrap_id }}.bootstrap.tar.xz
     ExecStartPre=cmd.exe /c mkdir c:\opt\mesosphere
-    ExecStart=7z e c:\{{ bootstrap_tmp_dir }}\bootstrap.tar.xz -oc:\bootstrap_tmp_dir
+    ExecStartPre=7z e c:\{{ bootstrap_tmp_dir }}\bootstrap.tar.xz -oc:\{{ bootstrap_tmp_dir }}
     ExecStart=7z x c:\{{ bootstrap_tmp_dir }}\bootstrap.tar -oc:\opt\mesosphere
     ExecStartPost=-cmd.exe /c del /f c:\{{ bootstrap_tmp_dir }}\bootstrap.tar.xz
     ExecStartPost=-cmd.exe /c del /f c:\{{ bootstrap_tmp_dir }}\bootstrap.tar
@@ -29,7 +29,7 @@
     Type=oneshot
     StandardOutput=journal+console
     StandardError=journal+console
-    EnvironmentFile=c:\opt\mesosphere\environment
+    EnvironmentFile=c:\opt\mesosphere\environment.export.ps1
     ExecStart=c:\opt\mesosphere\bin\scripts\pkgpanda setup --no-block-systemd
     [Install]
     WantedBy=multi-user.target

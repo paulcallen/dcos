@@ -14,6 +14,7 @@
     "mesos":"windows",
     "openstackservice":"windows",
     "pkgpanda-api":"windows",
+    "pkgpanda-role":"windows",
     "pytest":"windows",
     "python": "windows",
     "python-azure-mgmt-resource": "windows",
@@ -37,6 +38,7 @@
     "spartan":"windows",
     "teamcity-messages":"windows",
     "windows-7zip":"windows",
+    "windows-apache":"windows",
     "windows-systemctl":"windows"
 },
 "exclude": [
@@ -73,7 +75,6 @@
     "ncurses",
     "octarine",
     "openssl",
-    "pkgpanda-role",
     "python-gunicorn",
     "python-tox",
     "rexray",

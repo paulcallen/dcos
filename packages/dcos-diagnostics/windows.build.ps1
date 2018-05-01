@@ -26,7 +26,7 @@ $slave_service_dir = Split-Path $slave_service
 $slave_public_service_dir = Split-Path $slave_public_service
 
 new-item -itemtype Directory -Force $slave_service_dir
-mkdir -p $slave_public_service_dir
+new-item -itemtype Directory -Force $slave_public_service_dir
 
 Copy-Item c:\pkg\extra\dcos-diagnostics-agent.windows.service "$slave_service"
 Copy-Item c:\pkg\extra\dcos-diagnostics-agent.windows.service "$slave_public_service"

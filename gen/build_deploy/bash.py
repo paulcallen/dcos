@@ -194,6 +194,16 @@ write-output 'Configuring DC/OS'
 function download_dependencies
 {
     new-item -itemtype directory c:\\bootstrap_tmp > $null
+
+    & curl.exe  -o c:\\bootstrap_tmp\\VC_redist.x64.exe https://download.visualstudio.microsoft.com/download/pr/11687625/2cd2dba5748dc95950a5c42c2d2d78e4/VC_redist.x64.exe
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to download VC runtime redist package"
+    }
+    & c:\\bootstrap_tmp\\VC_redist.x64.exe /install /passive /norestart
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to install VC runtime redist package"
+    }
+ 
     & curl.exe  -o c:\\bootstrap_tmp\\openstackservice.exe https://dcosdevstorage.blob.core.windows.net/tmp/OpenStackService.exe
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to download openstackservice.exe"

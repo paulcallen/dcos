@@ -6,6 +6,7 @@
     "python-windows",
     "spartan",
     "windows-7zip",
+    "windows-apache",
     "windows-systemctl"
 ],
   "bootstrap_package_list": ["dcos-image"]

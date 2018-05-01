@@ -35,8 +35,9 @@ from pkgpanda.constants import (DCOS_SERVICE_CONFIGURATION_FILE,
                                 STATE_DIR_ROOT)
 from pkgpanda.exceptions import (InstallError, PackageError, PackageNotFound,
                                  ValidationError)
-from pkgpanda.util import (download, extract_tarball, if_exists, is_windows,
-                           load_json, make_directory, make_symlink, remove_directory, write_json, write_string)
+from pkgpanda.util import (copy_file, download, extract_tarball, if_exists, is_windows, load_json, 
+                           make_directory, make_symlink, remove_directory, remove_file, write_json,
+                           write_string)
 
 if not is_windows:
     assert 'grp' in sys.modules
@@ -134,14 +135,19 @@ class Systemd:
 
             # Copy the unit file to the systemd directory with a suffix added to the filename.
             # This file will be moved to systemd_file_path when the new package set is swapped in.
-            shutil.copyfile(package_file_path, tmp_systemd_file_path)
+            copy_file(package_file_path, tmp_systemd_file_path)
             shutil.copymode(package_file_path, tmp_systemd_file_path)
 
             # Rewrite the symlink to point to the copied unit file's destination.
-            # This symlink won't point to the correct file until the copied unit file is moved to its target location
-            # during activate_new_unit_files().
-            os.remove(wants_symlink_path)
-            make_symlink(systemd_file_path, wants_symlink_path)
+            remove_file(wants_symlink_path)
+            if is_windows:
+                # on windows we use hard links so we link to the temporary name and it will 
+                # still be fine after the rename
+                make_symlink(tmp_systemd_file_path, wants_symlink_path)
+            else:
+                # This symlink won't point to the correct file until the copied unit file is moved to its target location
+                # during activate_new_unit_files().
+                make_symlink(systemd_file_path, wants_symlink_path)
 
     def remove_unit_files(self):
         if not os.path.exists(self.__unit_directory):

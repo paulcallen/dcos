@@ -3,12 +3,12 @@ package:
     content: |
   - path: \etc\dcos-metrics.env.ps1
     content: |
-      $env:DCOS_METRICS_CONFIG_PATH="c:\opt\mesosphere\etc\dcos-metrics-config.yam"l
+      $env:DCOS_METRICS_CONFIG_PATH="c:\opt\mesosphere\etc\dcos-metrics-config.yam"
   - path: \pkginfo.json
     content: |
       {
         "environment": {
-          "$env:MESOS_IP_DISCOVERY_COMMAND": "c:\\opt\\mesosphere\\bin\\detect_ip.ps1",
+          "MESOS_IP_DISCOVERY_COMMAND": "c:\\opt\\mesosphere\\bin\\detect_ip.ps1",
           "PROVIDER": "{{ provider }}"
         }
       }
@@ -358,7 +358,7 @@ package:
     content: {{ fault_domain_detect_contents }}
 {% case "false" %}
 {% endswitch %}
-  - path: /etc/proxy.env.ps1
+  - path: \etc\proxy.env.ps1
 {% switch use_proxy %}
 {% case "true" %}
     content: |
@@ -368,3 +368,6 @@ package:
 {% case "false" %}
     content: ""
 {% endswitch %}
+  - path: \etc\adminrouter.env.ps1
+    content: |
+      $env:ADMINROUTER_ACTIVATE_AUTH_MODULE='{{ adminrouter_auth_enabled }}'

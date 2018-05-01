@@ -1,0 +1,6 @@
+{
+    "requires": [{"name":"windows-apache", "variant":"windows"}],
+    "sources": {},
+    "username": "dcos_adminrouter"
+  }
+  

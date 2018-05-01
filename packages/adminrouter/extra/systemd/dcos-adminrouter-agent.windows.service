@@ -1,0 +1,21 @@
+[Unit]
+Description=Admin Router Agent: exposes a unified control plane proxy for components and services using apache
+
+[Service]
+Restart=always
+StartLimitInterval=0
+RestartSec=5
+LimitNOFILE=16384
+EnvironmentFile=c:\opt\mesosphere\environment.export.ps1
+Type=forking
+PrivateDevices=yes
+StandardOutput=journal
+StandardError=journal
+#Environment=AUTH_ERROR_PAGE_DIR_PATH=c:\opt\mesosphere\bin\Apache24\bin\error\
+EnvironmentFile=c:\opt\mesosphere\etc\adminrouter.env.ps1
+ExecStartPre=ping.exe -n 1 ready.spartan
+ExecStartPre=ping.exe -n 1 leader.mesos
+ExecStart=c:\opt\mesosphere\bin\Apache24\bin\httpd.exe -f c:\opt\mesosphere\bin\Apache24\conf\adminrouter.conf
+#ExecReload=/usr/bin/kill -HUP $MAINPID
+KillSignal=SIGQUIT
+KillMode=mixed
