@@ -18,3 +18,15 @@ if ($LASTEXITCODE -ne 0)
 # Copy the build from the bin to the correct place
 new-item -itemtype directory -force "$env:PKG_PATH\bin"
 copy-item -Recurse -force c:\gopath\bin\* "$env:PKG_PATH\bin"
+
+$slave_service="${env:PKG_PATH}\dcos.target.wants_slave\dcos-diagnostics.service"
+$slave_public_service="${env:PKG_PATH}\dcos.target.wants_slave_public\dcos-diagnostics.service"
+
+$slave_service_dir = Split-Path $slave_service
+$slave_public_service_dir = Split-Path $slave_public_service
+
+new-item -itemtype Directory -Force $slave_service_dir
+mkdir -p $slave_public_service_dir
+
+Copy-Item c:\pkg\extra\dcos-diagnostics-agent.windows.service "$slave_service"
+Copy-Item c:\pkg\extra\dcos-diagnostics-agent.windows.service "$slave_public_service"

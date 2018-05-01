@@ -1,0 +1,25 @@
+[Unit]
+Description=Mesos Agent Public: distributed systems kernel public agent
+
+[Service]
+Restart=always
+StartLimitInterval=0
+RestartSec=5
+KillMode=control-group
+Delegate=true
+LimitNOFILE=infinity
+TasksMax=infinity
+SyslogIdentifier=mesos-agent
+EnvironmentFile=c:\opt\mesosphere\environment.export.ps1
+EnvironmentFile=c:\opt\mesosphere\etc\mesos-slave-common.ps1
+EnvironmentFile=c:\opt\mesosphere\etc\mesos-slave-public.ps1
+EnvironmentFile=c:\opt\mesosphere\etc\proxy.env.ps1
+EnvironmentFile=-c:\opt\mesosphere\etc\mesos-slave-common-extras.ps1
+EnvironmentFile=-c:\var\lib\dcos\mesos-slave-common.ps1
+EnvironmentFile=-c:\var\lib\dcos\mesos-resources.ps1
+EnvironmentFile=-C:\run\dcos\etc\mesos-slave-public.ps1
+ExecStartPre=ping -n 1 ready.spartan
+ExecStartPre=c:\opt\mesosphere\bin\scripts\bootstrap.exe dcos-mesos-slave-public
+#ExecStartPre=c:\opt\mesosphere\bin\make_disk_resources.py /var/lib/dcos/mesos-resources
+#ExecStartPre=/bin/bash -c 'for i in /proc/sys/net/ipv4/conf/*/rp_filter; do echo 2 > $i; echo -n "$i: "; cat $i; done'
+ExecStart=c:\opt\mesosphere\bin\mesos-agent.exe

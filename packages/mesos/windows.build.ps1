@@ -86,3 +86,14 @@ Start-MesosBuild
 #Copy result binaries to destination directory. 
 New-Item -itemtype directory "$env:PKG_PATH\bin" > $null
 Copy-Item -Path "$MESOS_BUILD_DIR\src\*" -Destination "$env:PKG_PATH\bin\" -Filter "*.exe"
+
+
+$systemd_slave="$env:PKG_PATH\dcos.target.wants_slave\dcos-mesos-slave.service"
+$systemd_slave_dir = Split-Path $systemd_slave
+New-Item -ItemType Directory -Force $systemd_slave_dir > $null
+Copy-Item "c:\pkg\extra\dcos-mesos-slave.windows.service" $systemd_slave
+
+$systemd_slave_public="$env:PKG_PATH\dcos.target.wants_slave_public\dcos-mesos-slave-public.service"
+$systemd_slave_public_dir = Split-Path $systemd_slave_public
+New-Item -ItemType Directory -Force $systemd_slave_public_dir > $null
+Copy-Item "c:\pkg\extra\dcos-mesos-slave-public.windows.service" $systemd_slave_public

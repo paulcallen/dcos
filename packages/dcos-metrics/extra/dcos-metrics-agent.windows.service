@@ -1,0 +1,16 @@
+[Unit]
+Description=DC/OS Metrics Agent: exposes node, container, and application metrics
+[Service]
+Restart=always
+RestartSec=5
+LimitNOFILE=16384
+PermissionsStartOnly=True
+User=dcos_metrics
+# Allow r/w access to the socket file
+SupplementaryGroups=dcos_adminrouter
+EnvironmentFile=c:\opt\mesosphere\environment.export.ps1
+EnvironmentFile=c:\opt\mesosphere\etc\dcos-metrics.env.ps1
+EnvironmentFile=-c:\opt\mesosphere\etc\dcos-metrics-extra.env.ps1
+ExecStartPre=c:\opt\mesosphere\bin\scripts\bootstrap.exe dcos-metrics-agent
+ExecStartPre=test-path c:\var\lib\dcos\cluster-id
+ExecStart=c:\opt\mesosphere\bin\dcos-metrics.exe -role agent -config $env:DCOS_METRICS_CONFIG_PATH

@@ -1,14 +1,14 @@
 package:
   - path: \etc\dcos-metrics-config.yaml
     content: |
-  - path: \etc\dcos-metrics.env
+  - path: \etc\dcos-metrics.env.ps1
     content: |
-      DCOS_METRICS_CONFIG_PATH="c:\opt\mesosphere\etc\dcos-metrics-config.yam"l
+      $env:DCOS_METRICS_CONFIG_PATH="c:\opt\mesosphere\etc\dcos-metrics-config.yam"l
   - path: \pkginfo.json
     content: |
       {
         "environment": {
-          "MESOS_IP_DISCOVERY_COMMAND": "c:\\opt\\mesosphere\\bin\\detect_ip.ps1",
+          "$env:MESOS_IP_DISCOVERY_COMMAND": "c:\\opt\\mesosphere\\bin\\detect_ip.ps1",
           "PROVIDER": "{{ provider }}"
         }
       }
@@ -59,72 +59,71 @@ package:
         "bind_ip_blacklist": {{ dns_bind_ip_blacklist_json }},
         "forward_zones": {{ dns_forward_zones }}
       }
-  - path: \etc\mesos-slave-common
+  - path: \etc\mesos-slave-common.ps1
     content: |
-      MESOS_MASTER="zk://zk-1.zk:2181,zk-2.zk:2181,zk-3.zk:2181,zk-4.zk:2181,zk-5.zk:2181/mesos"
-      MESOS_CONTAINERIZERS="docker,mesos"
-      MESOS_EXTERNAL_LOG_FILE="c:\var\log\mesos\mesos-agent.log"
-      MESOS_MODULES_DIR="c:\opt\mesosphere\etc\mesos-slave-modules"
-      MESOS_CONTAINER_LOGGER="com_mesosphere_mesos_JournaldLogger"
-      MESOS_ISOLATION="{{ mesos_isolation }}""
-      MESOS_DOCKER_VOLUME_CHECKPOINT_DIR="c"\var\lib\mesos\isolators\docker\volume"
-      MESOS_IMAGE_PROVIDERS="docker"
-      MESOS_NETWORK_CNI_CONFIG_DIR="c:\opt\mesosphere\etc\dcos\network\cni"
-      MESOS_NETWORK_CNI_PLUGINS_DIR="c:\opt\mesosphere\active\cni\;c:\opt\mesosphere\active\dcos-cni\;c:\opt\mesosphere\active\mesos\libexec\mesos"
-      MESOS_WORK_DIR="{{ mesos_agent_work_dir }}"
-      MESOS_SLAVE_SUBSYSTEMS="cpu,memory"
-      MESOS_LAUNCHER_DIR="c:\opt\mesosphere\active\mesos\libexec\mesos"
-      MESOS_EXECUTOR_ENVIRONMENT_VARIABLES="file:///opt/mesosphere/etc/mesos-executor-environment.json"
-      MESOS_EXECUTOR_REGISTRATION_TIMEOUT="10mins"
-      MESOS_RECONFIGURATION_POLICY="additive"
-      MESOS_RECOVERY_TIMEOUT="{{ mesos_recovery_timeout }}"
-      MESOS_CGROUPS_ENABLE_CFS="true"
-      MESOS_CGROUPS_LIMIT_SWAP="false"
-      MESOS_DISALLOW_SHARING_AGENT_PID_NAMESPACE="true"
-      MESOS_DOCKER_REMOVE_DELAY="{{ docker_remove_delay }}"
-      MESOS_DOCKER_STOP_TIMEOUT="{{ docker_stop_timeout }}"
-      MESOS_DOCKER_STORE_DIR="c:\var\lib\mesos\slave\store\docker"
-      MESOS_GC_DELAY="{{ gc_delay }}"
-      MESOS_HOSTNAME_LOOKUP="false"
-      MESOS_DEFAULT_CONTAINER_DNS="file:///opt/mesosphere/etc/mesos-slave-dns.json"
-      MESOS_IMAGE_GC_CONFIG="file:///opt/mesosphere/etc/mesos-slave-image-gc-config.json"
-      GLOG_drop_log_memory="false"
+      $env:MESOS_MASTER="zk://zk-1.zk:2181,zk-2.zk:2181,zk-3.zk:2181,zk-4.zk:2181,zk-5.zk:2181/mesos"
+      $env:MESOS_CONTAINERIZERS="docker,mesos"
+      $env:MESOS_EXTERNAL_LOG_FILE="c:\var\log\mesos\mesos-agent.log"
+      $env:MESOS_MODULES_DIR="c:\opt\mesosphere\etc\mesos-slave-modules"
+      $env:MESOS_CONTAINER_LOGGER="com_mesosphere_mesos_JournaldLogger"
+      $env:MESOS_ISOLATION="{{ mesos_isolation }}""
+      $env:MESOS_DOCKER_VOLUME_CHECKPOINT_DIR="c"\var\lib\mesos\isolators\docker\volume"
+      $env:MESOS_IMAGE_PROVIDERS="docker"
+      $env:MESOS_NETWORK_CNI_CONFIG_DIR="c:\opt\mesosphere\etc\dcos\network\cni"
+      $env:MESOS_NETWORK_CNI_PLUGINS_DIR="c:\opt\mesosphere\active\cni\;c:\opt\mesosphere\active\dcos-cni\;c:\opt\mesosphere\active\mesos\libexec\mesos"
+      $env:MESOS_WORK_DIR="{{ mesos_agent_work_dir }}"
+      $env:MESOS_SLAVE_SUBSYSTEMS="cpu,memory"
+      $env:MESOS_LAUNCHER_DIR="c:\opt\mesosphere\active\mesos\libexec\mesos"
+      $env:MESOS_EXECUTOR_ENVIRONMENT_VARIABLES="file:///opt/mesosphere/etc/mesos-executor-environment.json"
+      $env:MESOS_EXECUTOR_REGISTRATION_TIMEOUT="10mins"
+      $env:MESOS_RECONFIGURATION_POLICY="additive"
+      $env:MESOS_RECOVERY_TIMEOUT="{{ mesos_recovery_timeout }}"
+      $env:MESOS_CGROUPS_ENABLE_CFS="true"
+      $env:MESOS_CGROUPS_LIMIT_SWAP="false"
+      $env:MESOS_DISALLOW_SHARING_AGENT_PID_NAMESPACE="true"
+      $env:MESOS_DOCKER_REMOVE_DELAY="{{ docker_remove_delay }}"
+      $env:MESOS_DOCKER_STOP_TIMEOUT="{{ docker_stop_timeout }}"
+      $env:MESOS_DOCKER_STORE_DIR="c:\var\lib\mesos\slave\store\docker"
+      $env:MESOS_GC_DELAY="{{ gc_delay }}"
+      $env:MESOS_HOSTNAME_LOOKUP="false"
+      $env:MESOS_DEFAULT_CONTAINER_DNS="file:///opt/mesosphere/etc/mesos-slave-dns.json"
+      $env:MESOS_IMAGE_GC_CONFIG="file:///opt/mesosphere/etc/mesos-slave-image-gc-config.json"
+      $env:GLOG_drop_log_memory="false"
   - path: \etc\docker_credentials
     permissions: "0600"
     content: |
         {{ cluster_docker_credentials }}
-  - path: \etc\mesos-slave
+  - path: \etc\mesos-slave.ps1
     content: |
-      MESOS_RESOURCES=[{"name":"ports","type":"RANGES","ranges": {"range": [{"begin": 1025, "end": 2180},{"begin": 2182, "end": 3887},{"begin": 3889, "end": 5049},{"begin": 5052, "end": 8079},{"begin": 8082, "end": 8180},{"begin": 8182, "end": 32000}]}}]
-  - path: \etc\mesos-slave-public
+      $env:MESOS_RESOURCES='[{"name":"ports","type":"RANGES","ranges": {"range": [{"begin": 1025, "end": 2180},{"begin": 2182, "end": 3887},{"begin": 3889, "end": 5049},{"begin": 5052, "end": 8079},{"begin": 8082, "end": 8180},{"begin": 8182, "end": 32000}]}}]'
+  - path: \etc\mesos-slave-public.ps1
     content: |
-      MESOS_RESOURCES=[{"name":"ports","type":"RANGES","ranges": {"range": [{"begin": 1, "end": 21},{"begin": 23, "end": 5050},{"begin": 5052, "end": 32000}]}}]
-      MESOS_DEFAULT_ROLE=slave_public
-      MESOS_ATTRIBUTES=public_ip:true
+      $env:MESOS_RESOURCES='[{"name":"ports","type":"RANGES","ranges": {"range": [{"begin": 1, "end": 21},{"begin": 23, "end": 5050},{"begin": 5052, "end": 32000}]}}]'
+      $env:MESOS_DEFAULT_ROLE="slave_public"
+      $env:MESOS_ATTRIBUTES="public_ip:true"
   - path: \etc\mesos-executor-environment.json
     content: |
       {
-        "PATH": "c:\usr\bin;c:\bin",
         "SHELL": "powershell.exe",
         "LIBPROCESS_NUM_WORKER_THREADS": "8"
       }
   - path: \etc\dcos-diagnostics-runner-config.json
     content: {{ check_config_contents }}
-  - path: \etc\dcos-diagnostics.env
+  - path: \etc\dcos-diagnostics.env.ps1
     content: |
-      DCOS_DIAGNOSTICS_CONFIG_PATH=c:\opt\mesosphere\etc\dcos-diagnostics-config.json
+      $env:DCOS_DIAGNOSTICS_CONFIG_PATH=c:\opt\mesosphere\etc\dcos-diagnostics-config.json
   - path: \etc_slave\dcos-diagnostics-config.json
     content: |
       {
         "role": "agent",
-        "endpoint-config": "c:\opt\mesosphere\etc\dcos-diagnostics-endpoint-config.json",
+        "endpoint-config": "c:\\opt\\mesosphere\\etc\\dcos-diagnostics-endpoint-config.json",
         "agent-port": 61001
       }
   - path: \etc_slave_public\dcos-diagnostics-config.json
     content: |
       {
         "role": "agent_public",
-        "endpoint-config": "c:\opt\mesosphere\etc\dcos-diagnostics-endpoint-config.json",
+        "endpoint-config": "c:\\opt\\mesosphere\\etc\\dcos-diagnostics-endpoint-config.json",
         "agent-port": 61001
       }
   - path: \etc\dcos-diagnostics-endpoint-config.json
@@ -304,26 +303,26 @@ package:
           ],
           "LocalFiles": [
               {
-                  "Location": "c:\opt\mesosphere\active.buildinfo.full.json"
+                  "Location": "c:\\opt\\mesosphere\\active.buildinfo.full.json"
               },
               {
-                  "Location": "c:\opt\mesosphere\etc\dcos-version.json"
+                  "Location": "c:\\opt\\mesosphere\\etc\\dcos-version.json"
               },
               {
-                  "Location": "c:\opt\mesosphere\etc\expanded.config.json"
+                  "Location": "c:\\opt\\mesosphere\\etc\\expanded.config.json"
               },
               {
-                  "Location": "c:\opt\mesosphere\etc\user.config.yaml"
+                  "Location": "c:\\opt\\mesosphere\\etc\\user.config.yaml"
               },
               {
-                  "Location": "c:\var\lib\dcos\cluster-id"
+                  "Location": "c:\\var\\lib\\dcos\\cluster-id"
               },
               {
-                  "Location": "c:\var\lib\dcos\exhibitor\zookeeper\snapshot\myid",
+                  "Location": "c:\\var\\lib\\dcos\\exhibitor\\zookeeper\\snapshot\\myid",
                   "Role": ["master"]
               },
               {
-                  "Location": "c:\var\lib\dcos\exhibitor\conf\zoo.cfg",
+                  "Location": "c:\\var\\lib\dcos\\exhibitor\\conf\\zoo.cfg",
                   "Role": ["master"]
               }
           ],
@@ -358,4 +357,14 @@ package:
     permissions: "0755"
     content: {{ fault_domain_detect_contents }}
 {% case "false" %}
+{% endswitch %}
+  - path: /etc/proxy.env.ps1
+{% switch use_proxy %}
+{% case "true" %}
+    content: |
+      $env:http_proxy="{{ http_proxy }}"
+      $env:https_proxy="{{ https_proxy }}"
+      $env:no_proxy="{{ no_proxy_final }}"
+{% case "false" %}
+    content: ""
 {% endswitch %}
