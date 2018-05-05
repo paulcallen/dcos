@@ -32,11 +32,21 @@ if ($LASTEXITCODE -ne 0)
     exit -1
 }
 
-$params = @("-m", "pip", "install", "--no-deps", "--install-option=`"--prefix=c:\tmpPackage`"", "--root=c:\", "c:\pkg\src\pywin32-ctypes")
+$params = @("-m", "pip", "install", "--no-deps", "--install-option=`"--prefix=c:\tmpPackage`"", "--root=c:\", "c:\pkg\src\pywin32")
 & "python.exe" $params
 if ($LASTEXITCODE -ne 0)
 {
     Write-Error "Failed to install pywin32-ctypes"
+    exit -1
+}
+
+# portalocker is a portable version of fctrl that works on windows and linux.
+# on linux it is just fctrl and on windows it maps to win32 APIs.
+$params = @("-m", "pip", "install", "--no-deps", "--no-index", "--prefix=c:\tmpPackage", "c:\pkg\src\portalocker\portalocker-1.2.1-py2.py3-none-any.whl")
+& "python.exe" $params
+if ($LASTEXITCODE -ne 0)
+{
+    Write-Error "Failed to install portalocker"
     exit -1
 }
 
