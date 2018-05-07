@@ -1,0 +1,18 @@
+{
+  "requires": [
+    {"name":"erlang", "variant":"windows"},
+    {"name":"libsodium", "variant":"windows"}],
+  "sources": {
+    "dcos-net": {
+      "kind": "git",
+      "git": "https://github.com/dcos/dcos-net.git",
+      "ref": "73fe6d28a38dfcc58347615493958be37ce97bf9",
+      "ref_origin": "master"
+    }
+  },
+  "sysctl": {
+    "dcos-net": {
+      "net.ipv4.vs.conntrack": "1"
+    }
+  }
+}

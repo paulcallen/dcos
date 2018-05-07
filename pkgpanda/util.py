@@ -108,7 +108,9 @@ def make_symlink(src_path, dst_path):
             subprocess.check_call(['cmd.exe', '/c', 'mklink', '/J', dst_path, src_path])
         else:
             # create hard link for files
-            subprocess.check_call(['cmd.exe', '/c', 'mklink', '/H', dst_path, src_path])
+            # subprocess.check_call(['cmd.exe', '/c', 'mklink', '/H', dst_path, src_path])
+            os.link(src_path, dst_path)
+
     else:
         os.symlink(src_path, dst_path)
 

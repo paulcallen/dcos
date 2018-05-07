@@ -1,10 +1,8 @@
 {
   "exclude": [
     "dcos-launch",
-    "erts",
     "openstackservice",
     "python-windows",
-    "spartan",
     "windows-7zip",
     "windows-apache",
     "windows-systemctl"
