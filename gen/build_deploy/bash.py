@@ -157,6 +157,8 @@ function setup_directories() {
     new-item -itemtype directory -force "c:\\etc\\mesosphere\\roles" > $null
     new-item -itemtype directory -force "c:\\etc\\mesosphere\\setup-flags" > $null
     new-item -itemtype directory -force "c:\\tmp" > $null
+    new-item -itemtype directory -force "c:\\var\\log" > $null
+    new-item -itemtype directory -force "c:\\var\\log\\mesos" > $null
 }
 
 Function Touch-File($file)

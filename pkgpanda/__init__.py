@@ -36,8 +36,8 @@ from pkgpanda.constants import (DCOS_SERVICE_CONFIGURATION_FILE,
 from pkgpanda.exceptions import (InstallError, PackageError, PackageNotFound,
                                  ValidationError)
 from pkgpanda.util import (copy_file, download, extract_tarball, if_exists, is_windows, load_json, 
-                           make_directory, make_symlink, remove_directory, remove_file, write_json,
-                           write_string)
+                           make_directory, make_symlink, remove_directory, remove_file, rename_file,
+                           write_json, write_string)
 
 if not is_windows:
     assert 'grp' in sys.modules
@@ -511,7 +511,7 @@ class Repository:
         remove_directory(tmp_path)
 
         fetcher(id, tmp_path)
-        os.rename(tmp_path, pkg_path)
+        rename_file(tmp_path, pkg_path)
         return True
 
     def remove(self, id):

@@ -2,8 +2,6 @@
   content: |
     [Unit]
     Description=Pkgpanda: Download DC/OS to this host.
-    After=network-online.target
-    Wants=network-online.target
     ConditionPathExists=!c:\opt\mesosphere\active\
     [Service]
     Type=oneshot
@@ -12,8 +10,8 @@
     ExecStartPre=cmd.exe /c mkdir c:\{{ bootstrap_tmp_dir }}
     ExecStartPre=curl.exe --keepalive-time 2 -fLsSv --retry 20 -Y 100000 -y 60 -o c:\{{ bootstrap_tmp_dir }}\bootstrap.tar.xz {{ bootstrap_url }}/bootstrap/{{ bootstrap_id }}.bootstrap.tar.xz
     ExecStartPre=cmd.exe /c mkdir c:\opt\mesosphere
-    ExecStartPre=7z e c:\{{ bootstrap_tmp_dir }}\bootstrap.tar.xz -oc:\{{ bootstrap_tmp_dir }}
-    ExecStart=7z x c:\{{ bootstrap_tmp_dir }}\bootstrap.tar -oc:\opt\mesosphere
+    ExecStartPre=c:\7zip\7z e c:\{{ bootstrap_tmp_dir }}\bootstrap.tar.xz -oc:\{{ bootstrap_tmp_dir }}
+    ExecStart=c:\7zip\git st7z x c:\{{ bootstrap_tmp_dir }}\bootstrap.tar -oc:\opt\mesosphere
     ExecStartPost=-cmd.exe /c del /f c:\{{ bootstrap_tmp_dir }}\bootstrap.tar.xz
     ExecStartPost=-cmd.exe /c del /f c:\{{ bootstrap_tmp_dir }}\bootstrap.tar
 - name: dcos-setup.service

@@ -32,11 +32,27 @@ if ($LASTEXITCODE -ne 0)
     exit -1
 }
 
-$params = @("-m", "pip", "install", "--no-deps", "--install-option=`"--prefix=c:\tmpPackage`"", "--root=c:\", "c:\pkg\src\pywin32")
+$params = @("-m", "pip", "install", "--no-deps", "--no-index", "--prefix=c:\tmpPackage", "c:\pkg\src\pywin32\pywin32-223-cp36-cp36m-win_amd64.whl")
+& "python.exe" $params
+if ($LASTEXITCODE -ne 0)
+{
+    Write-Error "Failed to install pywin32"
+    exit -1
+}
+
+$params = @("-m", "pip", "install", "--no-deps", "--install-option=`"--prefix=c:\tmpPackage`"", "--root=c:\", "c:\pkg\src\pywin32-ctypes")
 & "python.exe" $params
 if ($LASTEXITCODE -ne 0)
 {
     Write-Error "Failed to install pywin32-ctypes"
+    exit -1
+}
+
+$params = @("-m", "pip", "install", "--no-deps", "--install-option=`"--prefix=c:\tmpPackage`"", "--root=c:\", "c:\pkg\src\pypiwin32")
+& "python.exe" $params
+if ($LASTEXITCODE -ne 0)
+{
+    Write-Error "Failed to install pypiwin32"
     exit -1
 }
 

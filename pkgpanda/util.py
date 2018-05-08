@@ -16,6 +16,7 @@ from itertools import chain
 from multiprocessing import Process
 from shutil import rmtree, which
 from subprocess import check_call
+from time import sleep
 from typing import List
 
 import requests
@@ -66,6 +67,23 @@ def remove_directory(path):
         subprocess.check_call(['rm', '-rf', path])
 
 
+def rename_file(src, dst):
+    """Rename a file or directory"""
+    if is_windows:
+        for retry in range(1,10):
+            try:
+                os.rename(src, dst)
+            except PermissionError:
+                if retry == 10:
+                    raise
+                else:
+                    sleep(0.05)
+                    continue
+            break
+    else:
+        os.rename(src, dst)
+
+    
 def make_directory(path):
     """Create a directory, creating intermediate directories if necessary"""
     if is_windows:
