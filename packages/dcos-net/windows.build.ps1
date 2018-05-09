@@ -16,4 +16,7 @@ if ($LASTEXITCODE -ne 0)
 }
 
 copy-item -Recurse "c:\dcos-net\_build\windows\rel\dcos-net\*" "$env:PKG_PATH"
-#copy-item "c:\pkg\build\extra\*" "$env:PKG_PATH"
+copy-item "c:\pkg\extra\dcos-net-env.ps1" "$env:PKG_PATH\bin"
+
+new-item -ItemType Directory -Force "$env:PKG_PATH\dcos.target.wants"
+Copy-Item "c:\pkg\extra\dcos-net.service" "$env:PKG_PATH\dcos.target.wants\"

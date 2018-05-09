@@ -371,3 +371,49 @@ package:
   - path: \etc\adminrouter.env.ps1
     content: |
       $env:ADMINROUTER_ACTIVATE_AUTH_MODULE='{{ adminrouter_auth_enabled }}'
+  - path: /etc/dcos-net.config.d/common.config
+    content: |
+      [
+        {dcos_net,
+          [
+            {dist_port, 62501},
+            {epmd_port, 61420}
+          ]
+        },
+        {dcos_l4lb,
+          [
+            {enable_lb, {{ enable_lb }}},
+            {enable_ipv6, {{ dcos_l4lb_enable_ipv6 }}},
+            {min_named_ip, {{ dcos_l4lb_min_named_ip_erltuple }}},
+            {max_named_ip, {{ dcos_l4lb_max_named_ip_erltuple }}},
+            {min_named_ip6, {{ dcos_l4lb_min_named_ip6_erltuple }}},
+            {max_named_ip6, {{ dcos_l4lb_max_named_ip6_erltuple }}}
+          ]
+        },
+        {dcos_overlay,
+          [
+            {enable_overlay, {{ dcos_overlay_enable }}}
+          ]
+        },
+        {dcos_rest,
+          [
+            {enable_rest, {{ dcos_net_rest_enable }}}
+          ]
+        },
+        {telemetry,
+          [
+            {forward_metrics, {{ dcos_l4lb_forward_metrics }}}
+          ]
+        }
+      ].
+  - path: /etc/check_time.env.ps1
+    content: |
+        $env:ENABLE_CHECK_TIME="{{ check_time }}"
+  - path: /etc/dcos_net.ps1
+    content: |
+      $env:DCOS_NET_WATCHDOG="{{ dcos_net_watchdog }}"
+      $env:DCOS_NET_IPV6="{{ enable_ipv6 }}"
+  - path: /etc/dns_config.ps1
+    content: |
+      MASTER_SOURCE=master_list
+      RESOLVERS={{ resolvers_str }}
