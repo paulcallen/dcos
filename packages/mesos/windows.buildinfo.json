@@ -2,7 +2,7 @@
   "single_source" : {
     "kind": "git",
     "git": "https://git-wip-us.apache.org/repos/asf/mesos.git",
-    "ref": "b95d68d632caef49c9bba9e57493d2d853df0a87",
+    "ref": "40177c893134870b8228babfc5eb40bd134f742a",
     "ref_origin" : "master"
   },
   "state_directory": true

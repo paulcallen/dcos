@@ -1,6 +1,7 @@
 [Unit]
 Description=Mesos Agent: distributed systems kernel agent
-
+Requires=dcos-portalocker.service
+After=dcos-portalocker.service
 [Service]
 Restart=always
 StartLimitInterval=0
@@ -10,6 +11,7 @@ Delegate=true
 LimitNOFILE=infinity
 TasksMax=infinity
 SyslogIdentifier=mesos-agent
+User=dcos_mesos
 EnvironmentFile=c:\opt\mesosphere\environment.export.ps1
 EnvironmentFile=c:\opt\mesosphere\etc\mesos-slave-common.ps1
 EnvironmentFile=c:\opt\mesosphere\etc\mesos-slave.ps1
@@ -18,8 +20,6 @@ EnvironmentFile=-c:\opt\mesosphere\etc\mesos-slave-common-extras.ps1
 EnvironmentFile=-c:\var\lib\dcos\mesos-slave-common.ps1
 EnvironmentFile=-c:\var\lib\dcos\mesos-resources.ps1
 EnvironmentFile=-c:\run\dcos\etc\mesos-slave.ps1
-ExecStartPre=ping -n 1 ready.spartan
+ExecStartPre=ping.exe -n 1 ready.spartan
 ExecStartPre=c:\opt\mesosphere\bin\scripts\bootstrap.exe dcos-mesos-slave
-#ExecStartPre=c:\opt\mesosphere\bin\make_disk_resources.py /var/lib/dcos/mesos-resources
-#ExecStartPre=/bin/bash -c 'for i in /proc/sys/net/ipv4/conf/*/rp_filter; do echo 2 > $i; echo -n "$i: "; cat $i; done'
 ExecStart=c:\opt\mesosphere\bin\mesos-agent.exe

@@ -894,7 +894,9 @@ class Install:
             for k, v in package.environment.items():
                 if is_windows:
                     env_contents += "${0}='{1}'\n".format(k, v)
-                    env_export_contents += "$env:{0}='{1}'\n".format(k, v)
+                    # note: need quotes around the environment value so nested environment
+                    # variables are expanded properly
+                    env_export_contents += '$env:{0}="{1}"\n'.format(k, v)
                 else:
                     env_contents += "{0}={1}\n".format(k, v)
                     env_export_contents += "export {0}={1}\n".format(k, v)

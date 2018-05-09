@@ -1,10 +1,9 @@
 {
-  "requires": [{"name":"openstackservice", "variant":"windows"}],
   "sources": {
     "systemctl-win": {
       "kind": "git",
       "git": "https://github.com/yakman2020/systemctl-win.git",
-      "ref": "5dcecf891368941c5018ae37b4737cb75dbfc9aa",
+      "ref": "2e0a8b666698686d979b7197e578c4991ca3602a",
       "ref_origin": "master"
     }
   }

@@ -3,7 +3,6 @@
     {"name":"boto","variant":"windows"},
     {"name":"dnspython","variant":"windows"},
     {"name":"flask","variant":"windows"},
-    {"name":"openstackservice", "variant":"windows"},
     {"name":"pytest","variant":"windows"},
     {"name":"python","variant":"windows"},
     {"name":"python-certifi","variant":"windows"},
@@ -21,6 +20,7 @@
     {"name":"six","variant":"windows"},
     {"name":"teamcity-messages","variant":"windows"},
     {"name":"windows-7zip", "variant":"windows"},
+    {"name":"windows-powershell-core", "variant":"windows"},
     {"name":"windows-systemctl", "variant":"windows"}
   ],
   "sources": {

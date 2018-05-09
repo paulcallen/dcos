@@ -159,6 +159,9 @@ function setup_directories() {
     new-item -itemtype directory -force "c:\\tmp" > $null
     new-item -itemtype directory -force "c:\\var\\log" > $null
     new-item -itemtype directory -force "c:\\var\\log\\mesos" > $null
+    new-item -itemtype directory -force "c:\\opt\\mesosphere\\bin" > $null
+    $env:path+=";c:\\opt\\mesosphere\\bin"
+
 }
 
 Function Touch-File($file)
@@ -193,44 +196,71 @@ write-output 'Configuring DC/OS'
 {{ setup_flags }}
 }
 
-function download_dependencies
+function do_install_vc_runtime
 {
-    new-item -itemtype directory c:\\bootstrap_tmp > $null
+    param($url, $name)
+    & curl.exe -fLsS -o c:\\bootstrap_tmp\\VC_redist.x64.exe $url
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to download $name ($url)"
+    }
+    & cmd.exe /c start /wait c:\\bootstrap_tmp\\VC_redist.x64.exe /install /passive /norestart
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to install $name ($url)"
+    }
+    remove-item -ErrorAction SilentlyContinue c:\\bootstrap_tmp\\VC_redist.x64.exe > $null
+}
+function install_vc_runtime
+{
+    # currently erlang is using vc2013
+    do_install_vc_runtime -name "vc2013 runtime" -url "http://download.microsoft.com/download/0/5/6/056dcda9-d667-4e27-8001-8a0c6971d6b1/vcredist_x64.exe"
+    #anything we build is using vc2017
+    do_install_vc_runtime -name "vc2017 runtime" -url "https://aka.ms/vs/15/release/vc_redist.x64.exe"
+}
 
-    & curl.exe  -o c:\\bootstrap_tmp\\VC_redist.x64.exe https://download.visualstudio.microsoft.com/download/pr/11687625/2cd2dba5748dc95950a5c42c2d2d78e4/VC_redist.x64.exe
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to download VC runtime redist package"
-    }
-    & c:\\bootstrap_tmp\\VC_redist.x64.exe /install /passive /norestart
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to install VC runtime redist package"
-    }
- 
-    & curl.exe  -o c:\\bootstrap_tmp\\openstackservice.exe https://dcosdevstorage.blob.core.windows.net/tmp/OpenStackService.exe
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to download openstackservice.exe"
-    }
-    & curl.exe  -o c:\\bootstrap_tmp\\systemctl.exe https://dcosdevstorage.blob.core.windows.net/tmp/systemctl.exe
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to download systemctl.exe"
-    }
-    $env:path+=";c:\\bootstrap_tmp"
-
+function install_7zip
+{
     # install 7zip in order to unpack the bootstrap node
-    new-item -itemtype directory "c:\\bootstrap_tmp"
-    & curl.exe  -o c:\\bootstrap_tmp\\7z1801-x64.msi https://7-zip.org/a/7z1801-x64.msi
+    & curl.exe -fLsS -o c:\\bootstrap_tmp\\7z1801-x64.msi https://7-zip.org/a/7z1801-x64.msi
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to download 7zip"
     }
-
-    new-item -itemtype directory "c:\\7zip"
-    & cmd.exe /c start /wait msiexec /i c:\\bootstrap_tmp\\7z1801-x64.msi INSTALLDIR="c:\\7zip" /qn
+    & cmd.exe /c start /wait msiexec /i c:\\bootstrap_tmp\\7z1801-x64.msi INSTALLDIR="c:\\opt\\mesosphere\\bin" /qn
     if ($LASTEXITCODE -ne 0) {
         throw "failed to install 7zip"
     }
-    $env:path+=";c:\\7zip"
-
     remove-item c:\\bootstrap_tmp\\7z1801-x64.msi
+}
+
+function install_systemd_alternative
+{
+    & curl.exe -fLsS -o c:\\bootstrap_tmp\\systemd-exec.exe https://dcosdevstorage.blob.core.windows.net/tmp/systemd-exec.exe
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to download windows systemd-exec.exe"
+    }
+    & curl.exe -fLsS -o c:\\bootstrap_tmp\\systemctl.exe https://dcosdevstorage.blob.core.windows.net/tmp/systemctl.exe
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to download windows systemctl.exe"
+    }
+}
+
+function install_powershell_core
+{
+    & curl.exe -fLsS -o c:\\bootstrap_tmp\\PowerShell-6.0.2-win-x64.zip https://github.com/PowerShell/PowerShell/releases/download/v6.0.2/PowerShell-6.0.2-win-x64.zip
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to download powershell core"
+    }
+    c:\\opt\\mesosphere\\bin\\7z.exe x c:\\bootstrap_tmp\\PowerShell-6.0.2-win-x64.zip -oc:\\opt\\mesosphere\\bin
+    remove-item c:\\bootstrap_tmp\\PowerShell-6.0.2-win-x64.zip
+}
+
+function download_dependencies
+{
+
+    install_vc_runtime
+    install_7zip
+    install_systemd_alternative
+    install_powershell_core
+
 }
 
 # Install the DC/OS services, start DC/OS
@@ -240,16 +270,53 @@ write-output 'Setting and starting DC/OS'
 {{ setup_services }}
 }
 
+function setup_docker
+{
+    # only create dcosnat if it does not exist
+    $a = docker network ls | select-string -pattern "dcosnat"
+    if ($a.count -eq 0)
+    {
+        & docker.exe network create --driver="nat" --opt "com.docker.network.windowsshim.disable_gatewaydns=true" "dcosnat"
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to create dcosnat docker network"
+        }
+    }
+}
+
+function create_firewall_rules
+{
+    # note: If any of these fail it will complain, but the reasons for failure are either:
+    # - no firewall for some reason
+    # - It is already configured with this name which probably means the script was already run before
+    # Failure will not stop the sript though
+    
+    new-netfirewallrule -name "dcos-zookeeper" -displayname "Allow inbound TCP Port 8181 for zookeeper" -Direction "Inbound" -LocalPort 8181 -Protocol "TCP"
+    new-netfirewallrule -name "dcos-mesos" -displayname "Allow inbound TCP Port 5051 for dcos-mesos" -Direction "Inbound" -LocalPort 5051 -Protocol "TCP"
+    new-netfirewallrule -name "dcos-net-udp" -displayname "Allow inbound UDP Port 53 for dcos-net" -Direction "Inbound" -LocalPort 53 -Protocol "UDP"
+    new-netfirewallrule -name "dcos-net-tcp" -displayname "Allow inbound TCP Port 53 for dcos-net" -Direction "Inbound" -LocalPort 53 -Protocol "TCP"
+    new-netfirewallrule -name "dcos-adminrouter" -displayname "Allow inbound TCP port 61001 for AdminRouter" -Direction "Inbound" -LocalPort 61001 -Protocol "TCP"
+}
 function dcos_install
 {
+    new-item -itemtype directory c:\\bootstrap_tmp > $null
+
     setup_directories
     setup_dcos_roles
+    setup_docker
     download_dependencies
+    create_firewall_rules
     configure_dcos
     setup_and_start_services
+
+# systemd temporarily runs out of c:\\bootstrap_tmp so it cannot be deleted here
+#    remove-item -force -recurse c:\\bootstrap_tmp  -ErrorAction SilentlyContinue
 }
 
 $ROLES = $args
+if ($ROLES.count -eq 0)
+{
+    throw "Must specify a role of 'slave' or 'slave_public'"
+}
 dcos_install
 
 """
@@ -769,10 +836,10 @@ main
 
 if is_windows:
     systemctl_no_block_service = """
-if (( $SYSTEMCTL_NO_BLOCK -eq 1 )) {{
-    systemctl {command} {name} --no-block
+if (( $env:SYSTEMCTL_NO_BLOCK -eq 1 )) {{
+    c:\\bootstrap_tmp\\systemctl {command} {name} --no-block
 }} else {{
-    systemctl {command} {name}
+    c:\\bootstrap_tmp\\systemctl {command} {name}
 }}
 """
 else:
@@ -838,7 +905,10 @@ def make_bash(gen_out) -> None:
         assert service['name'].endswith('.service')
         name = service['name'][:-8]
         if service.get('enable'):
-            setup_services += "systemctl enable {}\n".format(name)
+            if is_windows:
+                setup_services += "c:\\bootstrap_tmp\\systemctl enable {}\n".format(name)
+            else:
+                setup_services += "systemctl enable {}\n".format(name)
         if 'command' in service:
             if service.get('no_block'):
                 setup_services += systemctl_no_block_service.format(
@@ -1022,9 +1092,13 @@ def do_create(tag, build_name, reproducible_artifact_path, commit, variant_argum
         else:
             with logger.scope("Building installer for variant: {}".format(variant_name)):
 
+                if is_windows:
+                    channel_path_extension = 'tar.xz'
+                else:
+                    channel_path_extension = 'sh'
                 yield {
                     'channel_path': 'dcos_generate_config.{}{}'.format(pkgpanda.util.variant_prefix(variant),
-                                                                       script_extension),
+                                                                       channel_path_extension),
                     'local_path': make_installer_docker(variant, all_completes[variant],
                                                         all_completes[bootstrap_installer_name])
                 }

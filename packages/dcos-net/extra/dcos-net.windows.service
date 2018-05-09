@@ -1,36 +1,26 @@
 [Unit]
 Description=DC/OS Net: A distributed systems & network overlay orchestration engine
-
+Requires=dcos-portalocker.service
+After=dcos-portalocker.service
 [Service]
 Restart=always
 StartLimitInterval=0
 KillSignal=SIGKILL
 RestartSec=5
 LimitNOFILE=16384
-WorkingDirectory=c:\opt\mesosphere\dcos-net
+User=dcos_net
+WorkingDirectory=${PKG_PATH}\dcos-net
 EnvironmentFile=c:\opt\mesosphere\etc\check_time.env.ps1
 EnvironmentFile=c:\opt\mesosphere\environment.export.ps1
 EnvironmentFile=c:\opt\mesosphere\etc\dcos_net.ps1
 EnvironmentFile=c:\opt\mesosphere\etc\dns_config.ps1
-EnvironmentFile=-c:\opt\mesosphere\etc\dns_config_master.ps1
-Environment=$env:HOME="c:\opt\mesosphere"
-#checktime is from the check-time package. not ported
-#ExecStartPre=c:\opt\mesosphere\bin\check-time.exe
-#dcos-net-setup is just callign out to do network interface things
-#ExecStartPre=python c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.py modprobe ip_vs_wlc
-#ExecStartPre=python c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.py iptables --wait -A FORWARD -j ACCEPT
-#ExecStartPre=python c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.py iptables --wait -t nat -I POSTROUTING -m ipvs --ipvs --vdir ORIGINAL --vmethod MASQ -m comment --comment Minuteman-IPVS-IPTables-masquerade-rule -j MASQUERADE
-#ExecStartPre=python c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.py mkdir -p /var/lib/dcos/navstar/mnesia
-#ExecStartPre=python c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.py mkdir -p /var/lib/dcos/navstar/lashup
-#ExecStartPre=python c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.py modprobe dummy
-#ExecStartPre=python c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.py ip link add minuteman type dummy
-#ExecStartPre=python c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.py ip link set minuteman up
-#ExecStartPre=python c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.py ip link add spartan type dummy
-#ExecStartPre=python c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.py ip link set spartan up
-#ExecStartPre=python c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.py ip addr add 198.51.100.1/32 dev spartan
-#ExecStartPre=python c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.py ip addr add 198.51.100.2/32 dev spartan
-#ExecStartPre=python c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.py ip addr add 198.51.100.3/32 dev spartan
-#ExecStartPre=python c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.py --ipv6 sysctl -w net.ipv6.conf.spartan.disable_ipv6=0
-#ExecStartPre=python c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.py --ipv6 ip -6 addr add fd01:d::c633:6401/128 dev spartan
+Environment=HOME=c:\opt\mesosphere
+ExecStartPre=cmd /c mkdir c:\var\lib\dcos\navstar\mnesia
+ExecStartPre=cmd /c mkdir c:\var\lib\dcos\navstar\lashup
+ExecStartPre=pwsh.exe -file c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.ps1 ip-link-add dcos-net
+ExecStartPre=pwsh.exe -file c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.ps1 ip-addr-add-ipv6 fd01:d::c633:6401 128 dcos-net
+ExecStartPre=pwsh.exe -file c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.ps1 ip-addr-add 198.51.100.3 32 dcos-net
+ExecStartPre=pwsh.exe -file c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.ps1 ip-addr-add 198.51.100.2 32 dcos-net
+ExecStartPre=pwsh.exe -file c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.ps1 ip-addr-add 198.51.100.1 32 dcos-net
 ExecStartPre=c:\opt\mesosphere\bin\scripts\bootstrap.exe dcos-net
-ExecStart=C:\opt\mesosphere\bin\dcos-net-env.ps1 foreground
+ExecStart=pwsh.exe -file C:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-start.ps1

@@ -1,9 +1,9 @@
 {
   "exclude": [
-    "openstackservice",
     "python-windows",
     "windows-7zip",
     "windows-apache",
+    "windows-powershell-core",
     "windows-systemctl"
   ],
   "core_package_list": [

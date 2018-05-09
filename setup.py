@@ -65,10 +65,7 @@ setup(
         'schema',
         'keyring==9.1',  # FIXME: pin keyring to prevent dbus dep
         'teamcity-messages',
-        'pywin32;platform_system=="Windows"',
         'pywin32-ctypes;platform_system=="Windows"',
-        'pypiwin32;platform_system=="Windows"',
-        'portalocker',
         'colorama;platform_system=="Windows"'],
     entry_points={
         'console_scripts': [

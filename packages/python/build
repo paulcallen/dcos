@@ -61,6 +61,3 @@ ln -fs "$PKG_PATH/bin/pydoc3"  "$PKG_PATH/bin/pydoc"
 # above.
 $PKG_PATH/bin/python3 -m pip install --no-deps --install-option="--prefix=$PKG_PATH" --root=/ /pkg/src/cython
 
-# portalocker is a portable version of fctrl that works on windows and linux.
-# on linux it is just fctrl and on windows it maps to win32 APIs.
-$PKG_PATH/bin/python3 -m pip install --upgrade --no-deps --install-option="--prefix=$PKG_PATH" --root=/ /pkg/src/portalocker/*.whl

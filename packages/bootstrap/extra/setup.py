@@ -3,6 +3,9 @@ from setuptools import setup
 requires = [
     'kazoo',
     'requests',
+    'portalocker',
+    'pywin32;platform_system=="Windows"',
+    'pypiwin32;platform_system=="Windows"'
 ]
 
 

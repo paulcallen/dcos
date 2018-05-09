@@ -20,4 +20,4 @@ $env:BOOTSTRAP_VARIANT="{variant}"
 $env:INSTALLER_ARGV0="dcos_generate_config.windows.ps1"
 
 # On windows python scripts have a .exe generated that you execute
-invoke-expression "& `"c:\\opt\\mesosphere\\bin\\scripts\\dcos_installer.exe`" $argumentList"
+invoke-expression "& `"c:\\opt\\mesosphere\\bin\\scripts\\dcos_installer.exe`" $args"

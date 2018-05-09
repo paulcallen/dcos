@@ -88,10 +88,9 @@ def get_full_nodes_list(config):
 
     node_role_map = {
         'agent_list': 'agent',
-        'public_agent_list': 'public_agent'
+        'public_agent_list': 'public_agent',
+        'master_list': 'master'
     }
-    if not is_windows:
-        node_role_map += { 'master_list': 'master' }
     full_target_list = []
     for config_field, role in node_role_map.items():
         if config_field in config:
