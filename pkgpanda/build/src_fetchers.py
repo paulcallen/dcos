@@ -240,15 +240,14 @@ def _check_components_sanity(path, allow_extra_files):
         dir_count = 0
         for dir_file in dir_contents:
             if os.path.isdir(os.path.join(path, dir_file)):
-                dir_count+=1
+                dir_count += 1
         if dir_count != 1:
             raise ValidationError("Extracted archive has more than one top level"
-                                "directory, unable to strip it.")
+                                  "directory, unable to strip it.")
     else:
         if len(dir_contents) != 1 or not os.path.isdir(os.path.join(path, dir_contents[0])):
             raise ValidationError("Extracted archive has more than one top level"
-                                "component, unable to strip it.")
-
+                                  "component, unable to strip it.")
 
 
 def _strip_first_path_component(path, allow_extra_files=False):

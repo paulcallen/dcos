@@ -8,7 +8,6 @@ import re
 import shutil
 import socketserver
 import stat
-import tempfile
 import subprocess
 import tempfile
 from contextlib import contextmanager, ExitStack
@@ -70,7 +69,7 @@ def remove_directory(path):
 def rename_file(src, dst):
     """Rename a file or directory"""
     if is_windows:
-        for retry in range(1,10):
+        for retry in range(1, 10):
             try:
                 os.rename(src, dst)
             except PermissionError:
@@ -83,7 +82,7 @@ def rename_file(src, dst):
     else:
         os.rename(src, dst)
 
-    
+
 def make_directory(path):
     """Create a directory, creating intermediate directories if necessary"""
     if is_windows:
@@ -409,7 +408,7 @@ def make_tar(result_filename, change_folder):
         tar_filename = os.path.abspath(result_filename) + ".tar"
         delete_file = False
         try:
-            tar_cmd = ["7z", "a", "-snh", "-snl", tar_filename,  "*"]
+            tar_cmd = ["7z", "a", "-snh", "-snl", tar_filename, "*"]
             proc = subprocess.Popen(tar_cmd, cwd=destination_path)
             proc.wait()
             if proc.returncode != 0:
@@ -417,7 +416,7 @@ def make_tar(result_filename, change_folder):
 
             # now we can compress the tar file to the final name
             delete_file = True
-            tar_cmd = ["7z", "a", os.path.abspath(result_filename),  tar_filename]
+            tar_cmd = ["7z", "a", os.path.abspath(result_filename), tar_filename]
             proc = subprocess.Popen(tar_cmd)
             proc.wait()
             if proc.returncode != 0:

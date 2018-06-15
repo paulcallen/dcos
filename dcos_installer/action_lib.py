@@ -55,17 +55,17 @@ def add_pre_action(chain, ssh_user):
     else:
         chain.add_execute(['sudo', 'mkdir', '-p', REMOTE_TEMP_DIR], stage='Creating temp directory')
         chain.add_execute(['sudo', 'chown', ssh_user, REMOTE_TEMP_DIR],
-                        stage='Ensuring {} owns temporary directory'.format(ssh_user))
+                          stage='Ensuring {} owns temporary directory'.format(ssh_user))
 
 
 def add_post_action(chain):
     # Do cleanup steps for a chain
     if is_windows:
         chain.add_execute(['cmd.exe', '/c', 'rmdir', '/s', '/q', REMOTE_TEMP_DIR],
-                        stage='Cleaning up temporary directory')
+                          stage='Cleaning up temporary directory')
     else:
         chain.add_execute(['sudo', 'rm', '-rf', REMOTE_TEMP_DIR],
-                        stage='Cleaning up temporary directory')
+                          stage='Cleaning up temporary directory')
 
 
 class ExecuteException(Exception):
@@ -100,8 +100,8 @@ def get_full_nodes_list(config):
 
 
 @asyncio.coroutine
-def run_preflight(config, pf_script_path=(SERVE_DIR + os.sep + 'dcos_install.' + script_extension), block=False, state_json_dir=None,
-                  async_delegate=None, retry=False, options=None):
+def run_preflight(config, pf_script_path=(SERVE_DIR + os.sep + 'dcos_install.' + script_extension), block=False,
+                  state_json_dir=None, async_delegate=None, retry=False, options=None):
     '''
     Copies preflight.sh to target hosts and executes the script. Gathers
     stdout, sterr and return codes and logs them to disk via SSH library.
@@ -181,11 +181,10 @@ def _add_copy_packages(chain, local_pkg_base_path=SERVE_DIR):
 def _add_copy_bootstap(chain, local_bs_path):
     remote_bs_path = REMOTE_TEMP_DIR + '/bootstrap'
     if is_windows:
-        chain.add_execute(['cmd.exe', '/c', 'mkdir',remote_bs_path], stage='Creating directory')
+        chain.add_execute(['cmd.exe', '/c', 'mkdir', remote_bs_path], stage='Creating directory')
     else:
         chain.add_execute(['mkdir', '-p', remote_bs_path], stage='Creating directory')
-    chain.add_copy(local_bs_path, remote_bs_path,
-                   stage='Copying bootstrap')
+    chain.add_copy(local_bs_path, remote_bs_path, stage='Copying bootstrap')
 
 
 def _get_bootstrap_tarball(tarball_base_dir=BOOTSTRAP_DIR):
@@ -307,21 +306,21 @@ def install_dcos(
         pkgpanda_uninstall_chain = ssh.utils.CommandChain('remove_stale_dcos')
         if is_windows:
             pkgpanda_uninstall_chain.add_execute(['c:\\opt\\mesosphere\\bin\\scripts\\pkgpanda.exe', 'uninstall'],
-                                                stage='Trying pkgpanda uninstall')
+                                                 stage='Trying pkgpanda uninstall')
         else:
             pkgpanda_uninstall_chain.add_execute(['sudo', '-i', '/opt/mesosphere/bin/pkgpanda', 'uninstall'],
-                                                stage='Trying pkgpanda uninstall')
+                                                 stage='Trying pkgpanda uninstall')
         chains.append(pkgpanda_uninstall_chain)
 
         remove_dcos_chain = ssh.utils.CommandChain('remove_stale_dcos')
         if is_windows:
             remove_dcos_chain.add_execute(['cmd.exe', '/c', 'rmdir', '/q', '/s', 'c:\\opt\\mesosphere'],
-                                        stage="Removing DC/OS files")
+                                          stage="Removing DC/OS files")
             remove_dcos_chain.add_execute(['cmd.exe', '/c', 'rmdir', '/q', '/s', 'c:\\etc\\mesosphere'],
-                                        stage="Removing DC/OS files")
+                                          stage="Removing DC/OS files")
         else:
             remove_dcos_chain.add_execute(['rm', '-rf', '/opt/mesosphere', '/etc/mesosphere'],
-                                            stage="Removing DC/OS files")
+                                          stage="Removing DC/OS files")
         chains.append(remove_dcos_chain)
 
     chain = ssh.utils.CommandChain('deploy')
@@ -336,7 +335,8 @@ def install_dcos(
     if is_windows:
         chain.add_execute(
             lambda node: (
-                'powershell.exe -file {}\\dcos_install.ps1 {}'.format(REMOTE_TEMP_DIR, node.tags['dcos_install_param'])).split(),
+                'powershell.exe -file {}\\dcos_install.ps1 {}'.
+                format(REMOTE_TEMP_DIR, node.tags['dcos_install_param'])).split(),
             stage=lambda node: 'Installing DC/OS'
         )
     else:

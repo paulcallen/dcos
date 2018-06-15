@@ -35,7 +35,7 @@ from pkgpanda.constants import (DCOS_SERVICE_CONFIGURATION_FILE,
                                 STATE_DIR_ROOT)
 from pkgpanda.exceptions import (InstallError, PackageError, PackageNotFound,
                                  ValidationError)
-from pkgpanda.util import (copy_file, download, extract_tarball, if_exists, is_windows, load_json, 
+from pkgpanda.util import (copy_file, download, extract_tarball, if_exists, is_windows, load_json,
                            make_directory, make_symlink, remove_directory, remove_file, rename_file,
                            write_json, write_string)
 
@@ -127,7 +127,8 @@ class Systemd:
         for unit_name in self.unit_names(new_wants_dir):
             wants_symlink_path = os.path.join(new_wants_dir, unit_name)
             if is_windows:
-                package_file_path = os.path.realpath(wants_symlink_path) if not os.path.islink(wants_symlink_path) else os.readlink(wants_symlink_path)
+                package_file_path = os.path.realpath(wants_symlink_path) \
+                    if not os.path.islink(wants_symlink_path) else os.readlink(wants_symlink_path)
             else:
                 package_file_path = os.path.realpath(wants_symlink_path)
             systemd_file_path = os.path.join(self.__base_systemd, unit_name)
@@ -141,12 +142,12 @@ class Systemd:
             # Rewrite the symlink to point to the copied unit file's destination.
             remove_file(wants_symlink_path)
             if is_windows:
-                # on windows we use hard links so we link to the temporary name and it will 
+                # on windows we use hard links so we link to the temporary name and it will
                 # still be fine after the rename
                 make_symlink(tmp_systemd_file_path, wants_symlink_path)
             else:
-                # This symlink won't point to the correct file until the copied unit file is moved to its target location
-                # during activate_new_unit_files().
+                # This symlink won't point to the correct file until the copied unit file is moved to its
+                # target location during activate_new_unit_files().
                 make_symlink(systemd_file_path, wants_symlink_path)
 
     def remove_unit_files(self):

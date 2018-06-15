@@ -1,6 +1,6 @@
 import logging
+
 import portalocker
-import sys
 
 from pkgpanda.util import is_windows
 

@@ -41,7 +41,7 @@ $ROLE_DIR="c:\\etc\\mesosphere\\roles"
 $roles = get-item $ROLE_DIR\\slave,$ROLE_DIR\slave_public -ErrorAction SilentlyContinue
 if ($roles.count -ne 1)
 {
-    write-host "ERROR: Can't determine this node's role." 
+    write-host "ERROR: Can't determine this node's role."
     write-host "One of slave, or slave_public must be present under $ROLE_DIR."
     exit 1
 }

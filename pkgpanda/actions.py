@@ -203,7 +203,6 @@ def _get_package_list(package_list_id: str, repository_url: str) -> List[str]:
     finally:
         os.remove(filename)
 
-
     if not isinstance(package_list, list):
         raise ValidationError('{} should contain a JSON list of packages. Got a {}'.format(
             package_list_url, type(package_list)

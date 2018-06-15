@@ -1,5 +1,6 @@
 from os import sep
-from os.path import abspath, sep
+from os.path import abspath
+
 from pkgpanda.util import is_windows
 
 RESERVED_UNIT_NAMES = [
@@ -31,7 +32,7 @@ STATE_DIR_ROOT = abspath('/var/lib/dcos')
 PKG_DIR = abspath("/pkg")
 config_dir = abspath('/etc/mesosphere')
 install_root = abspath('/opt/mesosphere')
-systemd_system_root = abspath('/etc/systemd/system')+sep
+systemd_system_root = abspath('/etc/systemd/system') + sep
 repository_base = install_root + sep + 'packages'
 profile_dir = abspath('/etc/profile.d')
 

@@ -45,6 +45,7 @@ DCOS_VERSION = '1.12-dev'
 
 CHECK_SEARCH_PATH = '/opt/mesosphere/bin:/usr/bin:/bin:/sbin'
 
+
 def type_str(value):
     return type(value).__name__
 
@@ -449,8 +450,8 @@ def calculate_mesos_isolation(enable_gpu_isolation):
         isolators = ('windows/cpu,filesystem/windows,windows/mem')
     else:
         isolators = ('cgroups/cpu,cgroups/mem,cgroups/blkio,disk/du,network/cni,filesystem/linux,'
-                    'docker/runtime,docker/volume,volume/sandbox_path,volume/secret,posix/rlimits,'
-                    'namespaces/pid,linux/capabilities,com_mesosphere_MetricsIsolatorModule')
+                     'docker/runtime,docker/volume,volume/sandbox_path,volume/secret,posix/rlimits,'
+                     'namespaces/pid,linux/capabilities,com_mesosphere_MetricsIsolatorModule')
         if enable_gpu_isolation == 'true':
             isolators += ',cgroups/devices,gpu/nvidia'
     return isolators

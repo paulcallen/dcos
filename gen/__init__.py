@@ -737,7 +737,7 @@ def generate(
         # late_variables will be resolved by the service handling the cloud
         # config (e.g. Amazon CloudFormation). The rendered late config file
         # on a cluster node's filesystem will contain the final values.
-        _, late_config_path = os.path.splitdrive(os.path.abspath(config_dir + '/setup-flags/late-config.yaml'))    
+        _, late_config_path = os.path.splitdrive(os.path.abspath(config_dir + '/setup-flags/late-config.yaml'))
         rendered_templates[cloud_config_yaml]['root'].append({
             'path': late_config_path,
             'permissions': '0644',

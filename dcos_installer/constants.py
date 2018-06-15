@@ -1,5 +1,6 @@
 from os import sep
 from os.path import abspath
+
 from pkgpanda.util import is_windows
 
 

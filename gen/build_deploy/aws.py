@@ -23,6 +23,7 @@ if is_windows:
 else:
     shell_extension = ".sh"
 
+
 def get_ip_detect(name):
     return yaml.dump(resource_string('gen', ('ip-detect/{}' + shell_extension).format(name)).decode())
 
@@ -66,7 +67,7 @@ aws_base_source = Source(entry={
         'cloud_config': '{{ cloud_config }}',
         'rexray_config_preset': 'aws',
         'fault_domain_detect_contents': yaml.dump(
-            pkg_resources.resource_string('gen', 'fault-domain-detect/cloud'+shell_extension).decode())
+            pkg_resources.resource_string('gen', 'fault-domain-detect/cloud' + shell_extension).decode())
     },
     'conditional': {
         'oauth_available': {

@@ -92,7 +92,7 @@ onprem_source = Source(entry={
     'default': {
         'platform': 'onprem',
         'resolvers': '["8.8.8.8", "8.8.4.4"]',
-        'ip_detect_filename': ip_detect ,
+        'ip_detect_filename': ip_detect,
         'ip6_detect_filename': '',
         'bootstrap_id': lambda: calculate_environment_variable('BOOTSTRAP_ID'),
         'enable_docker_gc': 'false'
@@ -180,7 +180,7 @@ Function Touch-File($file)
     }
 }
 
-function setup_dcos_roles 
+function setup_dcos_roles
 {
     foreach ($role in $ROLES)
     {
@@ -212,7 +212,8 @@ function do_install_vc_runtime
 function install_vc_runtime
 {
     # currently erlang is using vc2013
-    do_install_vc_runtime -name "vc2013 runtime" -url "http://download.microsoft.com/download/0/5/6/056dcda9-d667-4e27-8001-8a0c6971d6b1/vcredist_x64.exe"
+    do_install_vc_runtime -name "vc2013 runtime" -url `
+        "http://download.microsoft.com/download/0/5/6/056dcda9-d667-4e27-8001-8a0c6971d6b1/vcredist_x64.exe"
     #anything we build is using vc2017
     do_install_vc_runtime -name "vc2017 runtime" -url "https://aka.ms/vs/15/release/vc_redist.x64.exe"
 }
@@ -233,7 +234,8 @@ function install_7zip
 
 function install_systemd_alternative
 {
-    & curl.exe -fLsS -o c:\\bootstrap_tmp\\systemd-exec.exe https://dcosdevstorage.blob.core.windows.net/tmp/systemd-exec.exe
+    & curl.exe -fLsS -o c:\\bootstrap_tmp\\systemd-exec.exe `
+        https://dcosdevstorage.blob.core.windows.net/tmp/systemd-exec.exe
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to download windows systemd-exec.exe"
     }
@@ -245,7 +247,8 @@ function install_systemd_alternative
 
 function install_powershell_core
 {
-    & curl.exe -fLsS -o c:\\bootstrap_tmp\\PowerShell-6.0.2-win-x64.zip https://github.com/PowerShell/PowerShell/releases/download/v6.0.2/PowerShell-6.0.2-win-x64.zip
+    & curl.exe -fLsS -o c:\\bootstrap_tmp\\PowerShell-6.0.2-win-x64.zip `
+            https://github.com/PowerShell/PowerShell/releases/download/v6.0.2/PowerShell-6.0.2-win-x64.zip
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to download powershell core"
     }
@@ -276,7 +279,8 @@ function setup_docker
     $a = docker network ls | select-string -pattern "dcosnat"
     if ($a.count -eq 0)
     {
-        & docker.exe network create --driver="nat" --opt "com.docker.network.windowsshim.disable_gatewaydns=true" "dcosnat"
+        & docker.exe network create --driver="nat" --opt "com.docker.network.windowsshim.disable_gatewaydns=true" `
+                "dcosnat"
         if ($LASTEXITCODE -ne 0) {
             throw "Failed to create dcosnat docker network"
         }
@@ -289,12 +293,17 @@ function create_firewall_rules
     # - no firewall for some reason
     # - It is already configured with this name which probably means the script was already run before
     # Failure will not stop the sript though
-    
-    new-netfirewallrule -name "dcos-zookeeper" -displayname "Allow inbound TCP Port 8181 for zookeeper" -Direction "Inbound" -LocalPort 8181 -Protocol "TCP"
-    new-netfirewallrule -name "dcos-mesos" -displayname "Allow inbound TCP Port 5051 for dcos-mesos" -Direction "Inbound" -LocalPort 5051 -Protocol "TCP"
-    new-netfirewallrule -name "dcos-net-udp" -displayname "Allow inbound UDP Port 53 for dcos-net" -Direction "Inbound" -LocalPort 53 -Protocol "UDP"
-    new-netfirewallrule -name "dcos-net-tcp" -displayname "Allow inbound TCP Port 53 for dcos-net" -Direction "Inbound" -LocalPort 53 -Protocol "TCP"
-    new-netfirewallrule -name "dcos-adminrouter" -displayname "Allow inbound TCP port 61001 for AdminRouter" -Direction "Inbound" -LocalPort 61001 -Protocol "TCP"
+
+    new-netfirewallrule -name "dcos-zookeeper" -displayname "Allow inbound TCP Port 8181 for zookeeper" `
+        -Direction "Inbound" -LocalPort 8181 -Protocol "TCP"
+    new-netfirewallrule -name "dcos-mesos" -displayname "Allow inbound TCP Port 5051 for dcos-mesos" `
+        -Direction "Inbound" -LocalPort 5051 -Protocol "TCP"
+    new-netfirewallrule -name "dcos-net-udp" -displayname "Allow inbound UDP Port 53 for dcos-net" `
+        -Direction "Inbound" -LocalPort 53 -Protocol "UDP"
+    new-netfirewallrule -name "dcos-net-tcp" -displayname "Allow inbound TCP Port 53 for dcos-net" `
+        -Direction "Inbound" -LocalPort 53 -Protocol "TCP"
+    new-netfirewallrule -name "dcos-adminrouter" -displayname "Allow inbound TCP port 61001 for AdminRouter" `
+        -Direction "Inbound" -LocalPort 61001 -Protocol "TCP"
 }
 function dcos_install
 {
@@ -960,10 +969,10 @@ def make_installer_docker(variant, variant_info, installer_info):
     genconf_tar = "dcos-genconf." + image_version + ".tar"
     if is_windows:
         installer_filename = ("packages/cache/dcos_generate_config." +
-                            pkgpanda.util.variant_prefix(variant) + "tar.xz")
+                              pkgpanda.util.variant_prefix(variant) + "tar.xz")
     else:
         installer_filename = ("packages/cache/dcos_generate_config." +
-                            pkgpanda.util.variant_prefix(variant) + "sh")
+                              pkgpanda.util.variant_prefix(variant) + "sh")
     bootstrap_filename = bootstrap_id + ".bootstrap.tar.xz"
     bootstrap_active_filename = bootstrap_id + ".active.json"
     installer_bootstrap_filename = installer_info['bootstrap'] + '.bootstrap.tar.xz'
@@ -1033,7 +1042,7 @@ def make_installer_docker(variant, variant_info, installer_info):
             make_directory(dest_path('gen_extra'))
 
         print("Building docker container in " + build_dir)
-        subprocess.check_call(['docker', 'build', '-t', docker_image_name, '-f', 
+        subprocess.check_call(['docker', 'build', '-t', docker_image_name, '-f',
                               build_dir + os.sep + dockerfile_filename, build_dir])
 
         print("Building", installer_filename)
@@ -1057,7 +1066,8 @@ def make_installer_docker(variant, variant_info, installer_info):
             stdout=open(genconf_tar, 'w'))
         if is_windows:
             tar_filename = "tar.exe"
-            subprocess.check_call([tar_filename, '-cf', os.path.abspath(installer_filename), genconf_tar, script_filename ])
+            subprocess.check_call([tar_filename, '-cf', os.path.abspath(installer_filename), genconf_tar,
+                                  script_filename])
         else:
             tar_filename = "tar"
             subprocess.check_call([tar_filename, 'cvf', '-', genconf_tar], stdout=open(installer_filename, 'a'))
