@@ -35,10 +35,8 @@ import schema
 import yaml
 
 import gen.internals
-import pkgpanda.exceptions
-from pkgpanda import PackageId
 from pkgpanda.constants import install_root, profile_dir
-from pkgpanda.util import hash_checkout, hash_str, is_windows
+from pkgpanda.util import is_windows
 
 
 DCOS_VERSION = '1.12-dev'
