@@ -49,6 +49,7 @@
     "cni",
     "cosmos",
     "curl",
+    "dcos-check-runner",
     "dcos-checks",
     "dcos-cni",
     "dcos-history",
