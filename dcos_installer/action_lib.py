@@ -87,9 +87,9 @@ def get_full_nodes_list(config):
                 for node in nodes]
 
     node_role_map = {
+        'master_list': 'master',
         'agent_list': 'agent',
-        'public_agent_list': 'public_agent',
-        'master_list': 'master'
+        'public_agent_list': 'public_agent'
     }
     full_target_list = []
     for config_field, role in node_role_map.items():
@@ -184,7 +184,8 @@ def _add_copy_bootstap(chain, local_bs_path):
         chain.add_execute(['cmd.exe', '/c', 'mkdir', remote_bs_path], stage='Creating directory')
     else:
         chain.add_execute(['mkdir', '-p', remote_bs_path], stage='Creating directory')
-    chain.add_copy(local_bs_path, remote_bs_path, stage='Copying bootstrap')
+    chain.add_copy(local_bs_path, remote_bs_path,
+                   stage='Copying bootstrap')
 
 
 def _get_bootstrap_tarball(tarball_base_dir=BOOTSTRAP_DIR):

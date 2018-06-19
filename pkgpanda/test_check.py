@@ -1,10 +1,18 @@
 from subprocess import check_output, PIPE, Popen, STDOUT
 
-import pytest
-
 from pkgpanda.util import is_windows, resources_test_dir
 
-list_output = """WARNING: `not_executable.py` is not executable
+if is_windows:
+    # File permissions are different on Windows, as well as end of line characters
+    list_output = """pkg1--12345\r
+ - hello_world_ok.py\r
+ - not_executable.py\r
+pkg2--12345\r
+ - failed_check.py\r
+ - shell_script_check.sh\r
+"""
+else:
+    list_output = """WARNING: `not_executable.py` is not executable
 pkg1--12345
  - hello_world_ok.py
 pkg2--12345
@@ -12,7 +20,14 @@ pkg2--12345
  - shell_script_check.sh
 """
 
-run_output_stdout = """Hello World
+if is_windows:
+    run_output_stdout = """Hello World\r
+I exist to fail...\r
+Assertion error\r
+Hello World\r
+"""
+else:
+    run_output_stdout = """Hello World
 I exist to fail...
 Assertion error
 Hello World
@@ -22,8 +37,6 @@ run_output_stderr = """WARNING: `not_executable.py` is not executable
 """
 
 
-# TODO: DCOS_OSS-3469 - muted Windows tests requiring investigation
-@pytest.mark.skipif(is_windows, reason="test fails on Windows reason unknown")
 def test_check_target_list():
     output = check_output([
         'pkgpanda',
@@ -35,7 +48,6 @@ def test_check_target_list():
 
 
 # TODO: DCOS_OSS-3469 - muted Windows tests requiring investigation
-@pytest.mark.skipif(is_windows, reason="test fails on Windows reason unknown")
 def test_check_target_run():
     cmd = Popen([
         'pkgpanda',

@@ -2,9 +2,6 @@ $ErrorActionPreference = "stop"
 
 . c:\\opt\\mesosphere\\environment.export.ps1
 
-# work-around a problem where ip-detect scripts cannot be found
-copy-item "c:\\genconf\ip-detect*" "c:\\"
-
 #$env:LD_LIBRARY_PATH=$env:LD_LIBRARY_PATH:/lib
 
 $env:PYTHONUNBUFFERED="notemtpy"

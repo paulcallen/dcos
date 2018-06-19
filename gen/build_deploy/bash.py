@@ -80,9 +80,9 @@ def validate_custom_check_bins_dir(custom_check_bins_dir):
 
 
 if is_windows:
-    ip_detect = "ip-detect.ps1"
+    ip_detect = "genconf\\ip-detect.ps1"
 else:
-    ip_detect = "ip-detect"
+    ip_detect = "genconf/ip-detect"
 
 onprem_source = Source(entry={
     'validate': [

@@ -1,7 +1,7 @@
 import abc
 import os.path
 import shutil
-from subprocess import CalledProcessError, check_call, check_output
+from subprocess import CalledProcessError, check_call, check_output, DEVNULL
 
 from pkgpanda.exceptions import ValidationError
 from pkgpanda.util import download_atomic, is_windows, logger, sha1
@@ -287,14 +287,14 @@ def extract_archive(archive, dst_dir):
             if tmp_extension == ".xz" or tmp_extension == ".gz":
                 tar_filename = dst_dir + os.sep + os.path.basename(tmp_filename)
                 # note 'e' means extract without directory so we can find the enclosed tar
-                check_call(['7z', 'e', archive, '-o' + dst_dir])
+                check_call(['7z', 'e', archive, '-o' + dst_dir], stdout=DEVNULL)
                 delete_intermediate_file = True
             else:
                 tar_filename = archive
                 delete_intermediate_file = False
                 # now untar
             try:
-                check_call(['7z', 'x', tar_filename, '-o' + dst_dir])
+                check_call(['7z', 'x', tar_filename, '-o' + dst_dir], stdout=DEVNULL)
             finally:
                 if delete_intermediate_file:
                     os.remove(tar_filename)
@@ -304,7 +304,7 @@ def extract_archive(archive, dst_dir):
             check_call(["tar", "-xf", archive, "--strip-components=1", "-C", dst_dir])
     elif archive_type == 'zip':
         if is_windows:
-            check_call(["7z", "x", archive, "-o" + dst_dir])
+            check_call(["7z", "x", archive, "-o" + dst_dir], stdout=DEVNULL)
         else:
             check_call(["unzip", "-x", archive, "-d", dst_dir])
         # unzip binary does not support '--strip-components=1',

@@ -87,6 +87,14 @@ def validate_json_list(value):
 
 
 def valid_ipv4_address(ip):
+    if is_windows:
+        # Windows implementation does not think '1' is an invalid address
+        # therefore we will at least make sure we have 4 dotted parts before
+        # handing off to inet_pton
+        ip_parts = ip.split('.')
+        if len(ip_parts) != 4:
+            return False
+
     try:
         socket.inet_pton(socket.AF_INET, ip)
         return True

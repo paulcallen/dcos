@@ -2,8 +2,6 @@ import os
 from shutil import copytree
 from subprocess import check_call, check_output
 
-import pytest
-
 from pkgpanda.util import expect_fs, is_windows, load_json, resources_test_dir, run
 
 
@@ -13,8 +11,6 @@ def tmp_repository(temp_dir, repo_dir=resources_test_dir("packages")):
     return repo_path
 
 
-# TODO: DCOS_OSS-3465 - muted Windows tests requiring investigation
-@pytest.mark.skipif(is_windows, reason="test fails on Windows reason unknown")
 def test_setup(tmpdir):
     repo_path = tmp_repository(tmpdir)
     tmpdir.join("root", "bootstrap").write("", ensure=True)
@@ -31,6 +27,11 @@ def test_setup(tmpdir):
     expect_fs("{0}".format(tmpdir), ["repository", "root"])
 
     # TODO(cmaloney): Validate things got placed correctly.
+    if is_windows:
+        environment_extension = ".ps1"
+    else:
+        environment_extension = ""
+
     expect_fs(
         "{0}/root".format(tmpdir),
         {
@@ -46,8 +47,8 @@ def test_setup(tmpdir):
             "include": [],
             "dcos.target.wants": ["dcos-mesos-master.service"],
             "dcos.target": None,
-            "environment": None,
-            "environment.export": None,
+            "environment" + environment_extension: None,
+            "environment.export" + environment_extension: None,
             "dcos-mesos-master.service": None           # rooted_systemd
         })
 
@@ -168,8 +169,6 @@ def test_setup(tmpdir):
     expect_fs("{0}".format(tmpdir), {"repository": None})
 
 
-# TODO: DCOS_OSS-3465 - muted Windows tests requiring investigation
-@pytest.mark.skipif(is_windows, reason="test fails on Windows reason unknown")
 def test_activate(tmpdir):
     repo_path = tmp_repository(tmpdir)
     state_dir_root = tmpdir.join("package_state")
@@ -264,8 +263,6 @@ def test_activate(tmpdir):
     # TODO(cmaloney): Test a full OS setup using http://0pointer.de/blog/projects/changing-roots.html
 
 
-# TODO: DCOS_OSS-3465 - muted Windows tests requiring investigation
-@pytest.mark.skipif(is_windows, reason="test fails on Windows reason unknown")
 def test_systemd_unit_files(tmpdir):
     repo_path = tmp_repository(tmpdir)
     tmpdir.join("root", "bootstrap").write("", ensure=True)

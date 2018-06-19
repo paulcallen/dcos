@@ -17,4 +17,4 @@ STATE_DIR = GENCONF_DIR + sep + 'state'
 BOOTSTRAP_DIR = SERVE_DIR + sep + 'bootstrap'
 PACKAGE_LIST_DIR = SERVE_DIR + sep + 'package_lists'
 ARTIFACT_DIR = 'artifacts'
-CHECK_RUNNER_CMD = abspath('/opt/mesosphere/bin/dcos-check-runner check')
+CHECK_RUNNER_CMD = abspath('/opt/mesosphere/bin/dcos-check-runner') + ' check'

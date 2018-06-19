@@ -49,7 +49,7 @@ def remove_file(path):
         # so calling out to the cmd prompt to do this fixes that.
         path = path.replace('/', '\\')
         if os.path.exists(path):
-            subprocess.call(['cmd.exe', '/c', 'del', '/q', path])
+            subprocess.call(['cmd.exe', '/c', 'del', '/q', path], stdout=subprocess.DEVNULL)
     else:
         subprocess.check_call(['rm', '-f', path])
 
@@ -61,7 +61,7 @@ def remove_directory(path):
         # so calling out to the cmd prompt to do this fixes that.
         path = path.replace('/', '\\')
         if os.path.exists(path):
-            subprocess.call(['cmd.exe', '/c', 'rmdir', '/s', '/q', path])
+            subprocess.call(['cmd.exe', '/c', 'rmdir', '/s', '/q', path], stdout=subprocess.DEVNULL)
     else:
         subprocess.check_call(['rm', '-rf', path])
 
@@ -100,7 +100,7 @@ def copy_file(src_path, dst_path):
         # thrown at it.
         src = src_path.replace('/', '\\')
         dst = dst_path.replace('/', '\\')
-        subprocess.check_call(['cmd.exe', '/c', 'copy', src, dst])
+        subprocess.check_call(['cmd.exe', '/c', 'copy', src, dst], stdout=subprocess.DEVNULL)
     else:
         subprocess.check_call(['cp', src_path, dst_path])
 
@@ -113,7 +113,7 @@ def copy_directory(src_path, dst_path):
         # thrown at it.
         src = src_path.replace('/', '\\')
         dst = dst_path.replace('/', '\\')
-        subprocess.check_call(['cmd.exe', '/c', 'xcopy', src, dst, '/E', '/B', '/I'])
+        subprocess.check_call(['cmd.exe', '/c', 'xcopy', src, dst, '/E', '/B', '/I'], stdout=subprocess.DEVNULL)
     else:
         subprocess.check_call(['cp', '-r', src_path, dst_path])
 
@@ -122,10 +122,9 @@ def make_symlink(src_path, dst_path):
     if is_windows:
         if os.path.isdir(src_path):
             # create a junction for directories
-            subprocess.check_call(['cmd.exe', '/c', 'mklink', '/J', dst_path, src_path])
+            subprocess.check_call(['cmd.exe', '/c', 'mklink', '/J', dst_path, src_path], stdout=subprocess.DEVNULL)
         else:
             # create hard link for files
-            # subprocess.check_call(['cmd.exe', '/c', 'mklink', '/H', dst_path, src_path])
             os.link(src_path, dst_path)
 
     else:
@@ -249,24 +248,30 @@ def extract_tarball(path, target):
     try:
         assert os.path.exists(path), "Path doesn't exist but should: {}".format(path)
         make_directory(target)
-
         if is_windows:
-            # need to uncompress if ends with .XZ
-            tmp_filename, tmp_extension = os.path.splitext(path)
-            if tmp_extension == ".xz" or tmp_extension == ".gz":
-                tar_filename = target + os.sep + os.path.basename(tmp_filename)
-                # note 'e' means extract without directory so we can find the enclosed tar
-                check_call(['7z', 'e', path, '-o' + target])
-                delete_intermediate_file = True
+            # need to uncompress if ends with .XZ or .gz
+            archive_filename, compression_type = os.path.splitext(path)
+
+            if compression_type == "":
+                # If we have no extension we probably compressed/tarred into a temporary file
+                compression_type = ".XZ"
+            compression_type = compression_type[1:]
+
+            if compression_type == "tar":
+                # We are just a tarball, so un-tar it
+                check_call(['7z', 'x', path, '-o' + target], stdout=subprocess.DEVNULL)
             else:
-                tar_filename = path
-                delete_intermediate_file = False
-                # now untar
-            try:
-                check_call(['7z', 'x', tar_filename, '-o' + target])
-            finally:
-                if delete_intermediate_file:
-                    os.remove(tar_filename)
+                # We have compression and tarball
+                _, archive_type = os.path.splitext(archive_filename)
+                if archive_type == "":
+                    archive_type = ".tar"
+                archive_type = archive_type[1:]
+
+            # uncompress sends to stdout
+            uncompress_cmdline = '7z e {} -t{} -so'.format(path, compression_type)
+            # untar pulls input from stdin
+            untar_cmdline = '7z x -si -t{} -o{}'.format(archive_type, target)
+            check_call('{} | {}'.format(uncompress_cmdline, untar_cmdline), stdout=subprocess.DEVNULL, shell=True)
         else:
             check_call(['tar', '-xf', path, '-C', target])
 
@@ -405,19 +410,29 @@ def make_tar(result_filename, change_folder):
         # on Windows with 7z we need to first tar, then we compress.
         destination_path = os.path.abspath(change_folder) + os.sep
         # Create a temporary .tar file
-        tar_filename = os.path.abspath(result_filename) + ".tar"
+        tar_filename, compression_type = os.path.splitext(os.path.abspath(result_filename))
+        if compression_type == "":
+            compression_type = ".XZ"
+        compression_type = compression_type[1::]
+        if tar_filename == os.path.abspath(result_filename):
+            tar_filename += ".tar"
+        _, archive_type = os.path.splitext(tar_filename)
+        archive_type = archive_type[1:]
         delete_file = False
         try:
-            tar_cmd = ["7z", "a", "-snh", "-snl", tar_filename, "*"]
-            proc = subprocess.Popen(tar_cmd, cwd=destination_path)
+            tar_cmd = ["7z", "a", "-snh", "-snl", "-t" + archive_type, "-sae", tar_filename, "*"]
+            proc = subprocess.Popen(tar_cmd, cwd=destination_path, stdout=subprocess.DEVNULL)
             proc.wait()
             if proc.returncode != 0:
                 raise subprocess.CalledProcessError(proc.returncode, tar_cmd)
 
             # now we can compress the tar file to the final name
+            # We are creating a new archive, so if one already exists we need to delete it
             delete_file = True
-            tar_cmd = ["7z", "a", os.path.abspath(result_filename), tar_filename]
-            proc = subprocess.Popen(tar_cmd)
+            if os.path.exists(os.path.abspath(result_filename)):
+                os.remove(result_filename)
+            tar_cmd = ["7z", "a", "-t" + compression_type, "-sae", os.path.abspath(result_filename), tar_filename]
+            proc = subprocess.Popen(tar_cmd, stdout=subprocess.DEVNULL)
             proc.wait()
             if proc.returncode != 0:
                 raise subprocess.CalledProcessError(proc.returncode, tar_cmd)

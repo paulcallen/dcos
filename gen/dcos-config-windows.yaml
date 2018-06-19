@@ -30,25 +30,13 @@ package:
       }
   - path: \bin\detect_ip.ps1
     permissions: "0755"
-    content: '
-      $headers = @{"Metadata" = "true"};
-      $r = Invoke-WebRequest -headers $headers "http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/privateIpAddress?api-version=2017-04-02&format=text" -UseBasicParsing ;
-      $r.Content
-    '
+    content: {{ ip_detect_contents }}
   - path: \bin\detect_ip_public.ps1
     permissions: "0755"
-    content: '
-      $headers = @{"Metadata" = "true"} ;
-      $r = Invoke-WebRequest -headers $headers "http://169.254.169.254/latest/meta-data/public-ipv4" -UseBasicParsing ;
-      $r.Content
-    '
+    content: {{ ip_detect_public_contents }}
   - path: \bin\detect_ip6.ps1
     permissions: "0755"
-    content: '
-      $headers = @{"Metadata" = "true"} ;
-      $r = Invoke-WebRequest -headers $headers "http://169.254.169.254/metadata/instance/network/interface/0/ipv6/ipAddress/0/privateIpAddress?api-version=2017-04-02&format=text" -UseBasicParsing ;
-      $r.Content
-    '
+    content: {{ ip6_detect_contents }}
   - path: \etc\license.txt
     permissions: "0600"
     content: {{ license_key_contents }}
@@ -105,6 +93,34 @@ package:
       $env:MESOS_DEFAULT_CONTAINER_DNS="file:///opt/mesosphere/etc/mesos-slave-dns.json"
       $env:MESOS_IMAGE_GC_CONFIG="file:///opt/mesosphere/etc/mesos-slave-image-gc-config.json"
       $env:GLOG_drop_log_memory="false"
+{% switch use_mesos_hooks %}
+{% case "true" %}
+      MESOS_HOOKS={{ mesos_hooks }}
+{% case "false" %}
+{% endswitch %}
+{% switch cluster_docker_registry_enabled %}
+{% case "true" %}
+      MESOS_DOCKER_REGISTRY={{ cluster_docker_registry_url }}
+{% case "false" %}
+{% endswitch %}
+{% switch cluster_docker_credentials_enabled %}
+{% case "true" %}
+      MESOS_DOCKER_CONFIG=file://{{ cluster_docker_credentials_path }}
+{% case "false" %}
+{% endswitch %}
+{% switch enable_mesos_ipv6_discovery %}
+{% case "false" %}
+{% case "true" %}
+      MESOS_IP6_DISCOVERY_COMMAND=c:\opt\mesosphere\bin\detect_ip6.ps1
+{% endswitch %}
+{% switch cluster_docker_credentials_dcos_owned %}
+{% case "true" %}
+  - path: /etc/docker_credentials
+    permissions: "0600"
+    content: |
+        {{ cluster_docker_credentials }}
+{% case "false" %}
+{% endswitch %}
   - path: /etc/mesos-slave-dns.json
     content: |
       {

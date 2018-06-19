@@ -253,7 +253,7 @@ def _do_bootstrap(install, repository):
                 os.getcwd(),
                 rm_on_error=False,
             )
-            late_package = load_json(filename)
+            late_package = load_yaml(filename)
         finally:
             os.remove(filename)
 

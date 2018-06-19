@@ -13,3 +13,15 @@ root:
     permissions: "0600"
     content: |
         {{ cluster_docker_credentials }}
+{% switch cluster_docker_credentials_dcos_owned %}
+{% case "true" %}
+{% case "false" %}
+{% switch cluster_docker_credentials_write_to_etc %}
+{% case "true" %}
+  - path: /etc/mesosphere/docker_credentials
+    permissions: "0600"
+    content: |
+        {{ cluster_docker_credentials }}
+{% case "false" %}
+{% endswitch %}
+{% endswitch %}

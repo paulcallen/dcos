@@ -47,9 +47,9 @@ def package(resource_dir, name, tmpdir):
     copytree(resource_dir, pkg_dir_2)
     package_store = pkgpanda.build.PackageStore(str(tmpdir.join("api-build")), None)
     if is_windows:
-        pkgpanda.build.pkgpanda.build.build(package_store, name, "windows", True)
+        return pkgpanda.build.pkgpanda.build.build(package_store, name, "windows", True)
     else:
-        pkgpanda.build.pkgpanda.build.build(package_store, name, None, True)
+        return pkgpanda.build.pkgpanda.build.build(package_store, name, None, True)
 
 
 def test_build(tmpdir):
@@ -61,8 +61,6 @@ def test_build_bad_sha1(tmpdir):
     package("resources" + sep + "base", "base", tmpdir)
 
 
-# TODO: DCOS_OSS-3470 - muted Windows tests requiring investigation
-@pytest.mark.skipif(is_windows, reason="Fails on windows, cause unknown")
 def test_hash_build_script(tmpdir):
     # hashcheck1 is the base package we're comparing against.
     pkg_path1 = str(package("resources/buildhash/hashcheck1", "hashcheck", tmpdir.join("hashcheck1")))
