@@ -1,3 +1,4 @@
+#throw "Break in build container"
 $ErrorActionPreference = "stop"
 copy-item -recurse  "c:\pkg\src\systemctl-win" -destination "c:\"
 push-location "c:\systemctl-win"

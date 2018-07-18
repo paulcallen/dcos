@@ -199,7 +199,7 @@ write-output 'Configuring DC/OS'
 function do_install_vc_runtime
 {
     param($url, $name)
-    & curl.exe -fLsS -o c:\\bootstrap_tmp\\VC_redist.x64.exe $url
+    & curl.exe -fLsS --retry 20 -o c:\\bootstrap_tmp\\VC_redist.x64.exe $url
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to download $name ($url)"
     }
@@ -221,7 +221,7 @@ function install_vc_runtime
 function install_7zip
 {
     # install 7zip in order to unpack the bootstrap node
-    & curl.exe -fLsS -o c:\\bootstrap_tmp\\7z1801-x64.msi https://7-zip.org/a/7z1801-x64.msi
+    & curl.exe -fLsS --retry 20 -o c:\\bootstrap_tmp\\7z1801-x64.msi https://7-zip.org/a/7z1801-x64.msi
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to download 7zip"
     }
@@ -234,7 +234,7 @@ function install_7zip
 
 function install_systemd_alternative
 {
-    & curl.exe -fLsS -o c:\\bootstrap_tmp\\systemd-exec.exe `
+    & curl.exe -fLsS --retry 20 -o c:\\bootstrap_tmp\\systemd-exec.exe `
         https://dcosdevstorage.blob.core.windows.net/tmp/systemd-exec.exe
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to download windows systemd-exec.exe"
@@ -245,9 +245,9 @@ function install_systemd_alternative
     }
 }
 
-function install_powershell_core
+eunction install_powershell_core
 {
-    & curl.exe -fLsS -o c:\\bootstrap_tmp\\PowerShell-6.0.2-win-x64.zip `
+    & curl.exe -fLsS --retry 20 -o c:\\bootstrap_tmp\\PowerShell-6.0.2-win-x64.zip `
             https://github.com/PowerShell/PowerShell/releases/download/v6.0.2/PowerShell-6.0.2-win-x64.zip
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to download powershell core"

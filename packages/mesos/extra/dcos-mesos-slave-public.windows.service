@@ -1,11 +1,11 @@
 [Unit]
 Description=Mesos Agent Public: distributed systems kernel public agent
-Requires=dcos-portalocker.service
+Requires=dcos-net.service
 After=dcos-portalocker.service
 [Service]
 Restart=always
 StartLimitInterval=0
-RestartSec=5
+RestartSec=2
 KillMode=control-group
 Delegate=true
 LimitNOFILE=infinity

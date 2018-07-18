@@ -3,7 +3,7 @@
     "systemctl-win": {
       "kind": "git",
       "git": "https://github.com/yakman2020/systemctl-win.git",
-      "ref": "65a02e5ab2885fd0135f2115e38b43f0b1741ffd",
+      "ref": "cfadff041aee1b7d427d10ff28f9ad7d0a5ea683",
       "ref_origin": "master"
     }
   }
