@@ -35,8 +35,8 @@ from pkgpanda.constants import (DCOS_SERVICE_CONFIGURATION_FILE,
                                 STATE_DIR_ROOT)
 from pkgpanda.exceptions import (InstallError, PackageError, PackageNotFound,
                                  ValidationError)
-from pkgpanda.util import (copy_file, download, extract_tarball, if_exists, is_windows, load_json,
-                           make_directory, make_symlink, remove_directory, remove_file, rename_file,
+from pkgpanda.util import (copy_file, download, extract_tarball, if_exists, is_windows, islink, load_json,
+                           make_directory, make_symlink, realpath, remove_directory, remove_file, rename_file,
                            write_json, write_string)
 
 if not is_windows:
@@ -126,11 +126,7 @@ class Systemd:
         """
         for unit_name in self.unit_names(new_wants_dir):
             wants_symlink_path = os.path.join(new_wants_dir, unit_name)
-            if is_windows:
-                package_file_path = os.path.realpath(wants_symlink_path) \
-                    if not os.path.islink(wants_symlink_path) else os.readlink(wants_symlink_path)
-            else:
-                package_file_path = os.path.realpath(wants_symlink_path)
+            package_file_path = realpath(wants_symlink_path)
             systemd_file_path = os.path.join(self.__base_systemd, unit_name)
             tmp_systemd_file_path = systemd_file_path + self.new_unit_suffix
 
@@ -540,12 +536,12 @@ def symlink_tree(src, dest):
         # real directory and symlink everything inside.
         # NOTE: We could relax this and follow symlinks, but then we
         # need to be careful about recursive filesystem layouts.
-        if os.path.isdir(src_path) and not os.path.islink(src_path):
+        if os.path.isdir(src_path) and not islink(src_path):
             if os.path.exists(dest_path):
                 # We can only merge a directory into a directory.
                 # We won't merge into a symlink directory because that could
                 # result in a package editing inside another package.
-                if not os.path.isdir(dest_path) and not os.path.islink(dest_path):
+                if not os.path.isdir(dest_path) and not islink(dest_path):
                     raise ValidationError(
                         "Can't merge a file `{0}` and directory (or symlink) `{1}` with the same name."
                         .format(src_path, dest_path))
@@ -760,10 +756,7 @@ class Install:
         ids = set()
         for name in os.listdir(active_dir):
             filename = os.path.join(active_dir, name)
-            if is_windows:
-                package_path = os.path.realpath(filename) if not os.path.islink(filename) else os.readlink(filename)
-            else:
-                package_path = os.path.realpath(filename)
+            package_path = realpath(filename)
 
             # NOTE: We don't validate the id here because we want to be able to
             # cope if there is something invalid in the current active dir.

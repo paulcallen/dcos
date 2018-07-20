@@ -1,3 +1,4 @@
+import ctypes
 import hashlib
 import http.server
 import json
@@ -26,6 +27,7 @@ from requests.packages.urllib3.util.retry import Retry
 from teamcity.messages import TeamcityServiceMessages
 
 from pkgpanda.exceptions import FetchError, ValidationError
+
 
 is_windows = platform.system() == "Windows"
 
@@ -129,6 +131,39 @@ def make_symlink(src_path, dst_path):
 
     else:
         os.symlink(src_path, dst_path)
+
+
+def _is_junction(path):
+    if is_windows:
+        if os.path.isdir(path):
+            file_attribute_reparse_point = 0x0400
+            attributes = ctypes.windll.kernel32.GetFileAttributesW(path)
+            return (attributes & file_attribute_reparse_point) > 0
+    else:
+        return False
+
+
+def islink(path):
+    if is_windows:
+        if os.path.isdir(path):
+            return _is_junction(path)
+        else:
+            return os.path.islink(path)
+    else:
+        return os.path.islink(path)
+
+
+def realpath(path):
+    if is_windows:
+        # do lots of junk
+        if _is_junction(path):
+            # powershell (get-item path).target
+            return subprocess.check_output(["powershell", "(get-item " + path + ").target"]).decode().splitlines()[0]
+        else:
+            # This is probably not correct!
+            return os.path.realpath(path)
+    else:
+        return os.path.realpath(path)
 
 
 def variant_str(variant):
@@ -333,7 +368,7 @@ def write_string(filename, data):
     permissions 0o644.
     """
     prefix = os.path.basename(filename)
-    tmp_file_dir = os.path.dirname(os.path.realpath(filename))
+    tmp_file_dir = os.path.dirname(realpath(filename))
     fd, temporary_filename = tempfile.mkstemp(prefix=prefix, dir=tmp_file_dir)
 
     try:

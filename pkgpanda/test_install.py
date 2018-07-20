@@ -60,12 +60,12 @@ def test_recovery_archive(tmpdir):
                 "active.old": ["mesos"],
                 "bin": ["mesos", "mesos-dir"],
                 "dcos.target.wants": [".gitignore"],
-                "environment": None, # linux file ignored
-                "environment.new": None, # linux file ignored
-                "environment.ps1": None, # new windows file
-                "environment.export.new": None, # linux file ignored
-                "environment.export.ps1": None, # new windows file
-                "environment.ps1.old": None, # renamed existing windows file
+                "environment": None,  # linux file ignored
+                "environment.new": None,  # linux file ignored
+                "environment.ps1": None,
+                "environment.export.new": None,  # linux file ignored
+                "environment.export.ps1": None,
+                "environment.ps1.old": None,
                 "etc": [".gitignore"],
                 "include": [".gitignore"],
                 "lib": ["libmesos.so"]
@@ -81,10 +81,10 @@ def test_recovery_archive(tmpdir):
                 "bin": ["mesos", "mesos-dir"],
                 "dcos.target.wants": [".gitignore"],
                 "environment": None,
-                "environment.ps1": None, # windows file ignored
-                "environment.ps1.new": None, # windows file ignored
+                "environment.ps1": None,  # windows file ignored
+                "environment.ps1.new": None,  # windows file ignored
                 "environment.export": None,
-                "environment.export.ps1.new": None, # windows file ignored
+                "environment.export.ps1.new": None,  # windows file ignored
                 "environment.old": None,
                 "etc": [".gitignore"],
                 "include": [".gitignore"],
@@ -111,8 +111,8 @@ def test_recovery_move_new(tmpdir):
                 "dcos.target.wants": [".gitignore"],
                 "environment.ps1": None,
                 "environment.export.ps1": None,
-                "environment.new": None, # linux files ignored
-                "environment.export.new": None, # linux files ignored
+                "environment.new": None,  # linux files ignored
+                "environment.export.new": None,  # linux files ignored
                 "etc": [".gitignore"],
                 "include": [".gitignore"],
                 "lib": ["libmesos.so"]
@@ -128,8 +128,8 @@ def test_recovery_move_new(tmpdir):
                 "dcos.target.wants": [".gitignore"],
                 "environment": None,
                 "environment.export": None,
-                "environment.ps1.new": None, # winodws files ignored
-                "environment.export.ps1.new": None, # windows files ignored
+                "environment.ps1.new": None,  # winodws files ignored
+                "environment.export.ps1.new": None,  # windows files ignored
                 "etc": [".gitignore"],
                 "include": [".gitignore"],
                 "lib": ["libmesos.so"]
