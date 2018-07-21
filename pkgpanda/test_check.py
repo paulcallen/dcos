@@ -9,6 +9,7 @@ if is_windows:
  - not_executable.py\r
 pkg2--12345\r
  - failed_check.py\r
+ - shell_script_check.ps1\r
  - shell_script_check.sh\r
 """
 else:
@@ -17,6 +18,7 @@ pkg1--12345
  - hello_world_ok.py
 pkg2--12345
  - failed_check.py
+ - shell_script_check.ps1
  - shell_script_check.sh
 """
 
@@ -33,7 +35,11 @@ Assertion error
 Hello World
 """
 
-run_output_stderr = """WARNING: `not_executable.py` is not executable
+if is_windows:
+    # execution permission is not used on Windows so this error does not happen
+    run_output_stderr = ""
+else:
+    run_output_stderr = """WARNING: `not_executable.py` is not executable
 """
 
 
