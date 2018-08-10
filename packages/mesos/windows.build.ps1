@@ -3,73 +3,6 @@ $ErrorActionPreference = "stop"
 $MESOS_DIR = "c:\mesos-tmp"
 $MESOS_BUILD_DIR = Join-Path $MESOS_DIR "build"
 $MESOS_GIT_REPO_DIR = Join-Path $MESOS_DIR "mesos"
-$MESOS_BUILD_OUT_DIR = Join-Path $MESOS_DIR "build-output"
-
-function New-Directory {
-    Param(
-        [Parameter(Mandatory=$true)]
-        [string]$Path,
-        [Parameter(Mandatory=$false)]
-        [switch]$RemoveExisting
-    )
-    if(Test-Path $Path) {
-        if($RemoveExisting) {
-            # Remove if it already exist
-            Remove-Item -Recurse -Force $Path
-        } else {
-            return
-        }
-    }
-    return (New-Item -ItemType Directory -Path $Path)
-}
-
-function New-Environment {
-    Write-Output "Creating new tests environment"
-    New-Directory $MESOS_BUILD_DIR
-    New-Directory $MESOS_BUILD_OUT_DIR -RemoveExisting
-    Write-Output "New tests environment was successfully created"
-}
-
-function Start-ExternalCommand {
-    <#
-    .SYNOPSIS
-    Helper function to execute a script block and throw an exception in case of error.
-    .PARAMETER ScriptBlock
-    Script block to execute
-    .PARAMETER ArgumentList
-    A list of parameters to pass to Invoke-Command
-    .PARAMETER ErrorMessage
-    Optional error message. This will become part of the exception message we throw in case of an error.
-    #>
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [Alias("Command")]
-        [ScriptBlock]$ScriptBlock,
-        [array]$ArgumentList=@(),
-        [string]$ErrorMessage
-    )
-    PROCESS {
-        if($LASTEXITCODE){
-            # Leftover exit code. Some other process failed, and this
-            # function was called before it was resolved.
-            # There is no way to determine if the ScriptBlock contains
-            # a powershell commandlet or a native application. So we clear out
-            # the LASTEXITCODE variable before we execute. By this time, the value of
-            # the variable is not to be trusted for error detection anyway.
-            $LASTEXITCODE = ""
-        }
-        $res = Invoke-Command -ScriptBlock $ScriptBlock -ArgumentList $ArgumentList
-        if ($LASTEXITCODE) {
-            if(!$ErrorMessage){
-                Throw ("Command exited with status: {0}" -f $LASTEXITCODE)
-            }
-            Throw ("{0} (Exit code: $LASTEXITCODE)" -f $ErrorMessage)
-        }
-        return $res
-    }
-}
-
 
 function Wait-ProcessToFinish {
     Param(
@@ -77,10 +10,6 @@ function Wait-ProcessToFinish {
         [String]$ProcessPath,
         [Parameter(Mandatory=$false)]
         [String[]]$ArgumentList,
-        [Parameter(Mandatory=$false)]
-        [String]$StandardOutput,
-        [Parameter(Mandatory=$false)]
-        [String]$StandardError,
         [Parameter(Mandatory=$false)]
         [int]$Timeout=7200
     )
@@ -91,12 +20,6 @@ function Wait-ProcessToFinish {
     }
     if ($ArgumentList.Count -gt 0) {
         $parameters['ArgumentList'] = $ArgumentList
-    }
-    if ($StandardOutput) {
-        $parameters['RedirectStandardOutput'] = $StandardOutput
-    }
-    if ($StandardError) {
-        $parameters['RedirectStandardError'] = $StandardError
     }
     $process = Start-Process @parameters
     $errorMessage = "The process $ProcessPath didn't finish successfully"
@@ -114,41 +37,22 @@ function Wait-ProcessToFinish {
     }
 }
 
-function Start-MesosCIProcess {
-    Param(
-        [Parameter(Mandatory=$true)]
-        [string]$ProcessPath,
-        [Parameter(Mandatory=$false)]
-        [string[]]$ArgumentList,
-        [Parameter(Mandatory=$true)]
-        [string]$BuildErrorMessage
-    )
-    $command = $ProcessPath -replace '\\', '\\'
-    if($ArgumentList.Count) {
-        $ArgumentList | Foreach-Object { $command += " $($_ -replace '\\', '\\')" }
-    }
-    try {
-        Wait-ProcessToFinish -ProcessPath $ProcessPath -ArgumentList $ArgumentList 
-        $msg = "Successfully executed: $command"
-    } catch {
-        $msg = "Failed command: $command"
-        $global:BUILD_STATUS = 'FAIL'
-        Write-Output "Exception: $($_.ToString())"
-        Throw $BuildErrorMessage
-    } finally {
-        Write-Output $msg
-    }
-}
-
 function Start-MesosBuild {
     Write-Output "Creating mesos cmake makefiles"
     Push-Location $MESOS_BUILD_DIR
+    # Ninja builds Mesos faster, but we are still ironing out the kinks
+    $buildNinja = $false
     try {
-        $generatorName = "Visual Studio 15 2017 Win64"
-        $parameters = @("$MESOS_GIT_REPO_DIR", "-G", "`"$generatorName`"", "-T", "host=x64", "-DENABLE_LIBEVENT=1")
+        if ($buildNinja) {
+            # options to use Ninja 
+            $parameters = @("$MESOS_GIT_REPO_DIR", "-G", "Ninja", "-DENABLE_LIBWINIO=ON", "-DCMAKE_BUILD_TYPE=Release")
+        } else {
+            # msbuild options
+            $generatorName = "Visual Studio 15 2017 Win64"
+            $parameters = @("$MESOS_GIT_REPO_DIR", "-G", "`"$generatorName`"", "-T", "host=x64", "-DENABLE_LIBWINIO=ON")
+        }
 
-        Start-MesosCIProcess -ProcessPath "cmake.exe" -ArgumentList $parameters -BuildErrorMessage "Mesos cmake files failed to generate."
-            #-StdoutFileName "mesos-build-cmake-stdout.log" -StderrFileName "mesos-build-cmake-stderr.log"
+        Wait-ProcessToFinish -ProcessPath "cmake.exe" -ArgumentList $parameters 
     } finally {
         Pop-Location
     }
@@ -156,26 +60,40 @@ function Start-MesosBuild {
 
     Write-Output "Started building Mesos binaries"
     Push-Location $MESOS_BUILD_DIR
-
     try {
+        if ($buildNinja) {
+            # options to use Ninja
+            $parameters = @("--build", ".", "--target", "mesos-agent")
+        } else {
+            # msbuild options
+            $parameters =  @("--build", ".", "--config", "Release", "--target", "mesos-agent", "--", "/maxcpucount")
+        }
 
-        Start-MesosCIProcess -ProcessPath "cmake.exe" -ArgumentList @("--build", ".", "--", "/m") -BuildErrorMessage "Mesos binaries failed to build."
+        Wait-ProcessToFinish -ProcessPath "cmake.exe" -ArgumentList $parameters 
     } finally {
         Pop-Location
     }
     Write-Output "Mesos binaries were successfully built"
-
-
 }
 
-
+# copy source to temporary build directory
 copy-item -Recurse "c:/pkg/src/" -destination "$MESOS_DIR"
 
-New-Environment
+New-Item -ItemType Directory -Path $MESOS_BUILD_DIR > $null
 
 Start-MesosBuild
 
-#Copy build directory to destination directory. 
-#For now we grab the whole lot
-New-Item -itemtype directory "$env:PKG_PATH\bin"
+#Copy result binaries to destination directory. 
+New-Item -itemtype directory "$env:PKG_PATH\bin" > $null
 Copy-Item -Path "$MESOS_BUILD_DIR\src\*" -Destination "$env:PKG_PATH\bin\" -Filter "*.exe"
+
+
+$systemd_slave="$env:PKG_PATH\dcos.target.wants_slave\dcos-mesos-slave.service"
+$systemd_slave_dir = Split-Path $systemd_slave
+New-Item -ItemType Directory -Force $systemd_slave_dir > $null
+Copy-Item "c:\pkg\extra\dcos-mesos-slave.windows.service" $systemd_slave
+
+$systemd_slave_public="$env:PKG_PATH\dcos.target.wants_slave_public\dcos-mesos-slave-public.service"
+$systemd_slave_public_dir = Split-Path $systemd_slave_public
+New-Item -ItemType Directory -Force $systemd_slave_public_dir > $null
+Copy-Item "c:\pkg\extra\dcos-mesos-slave-public.windows.service" $systemd_slave_public
