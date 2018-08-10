@@ -1,0 +1,11 @@
+[Unit]
+Description=Properly install the Python portalocker dependent library pywin32.
+ConditionPathExists=!c:\opt\mesosphere\etc\pywin32.initialized
+[Service]
+Type=oneshot
+StandardOutput=journal+console
+StandardError=journal+console
+User=dcos_portalocker
+EnvironmentFile=c:\opt\mesosphere\environment.export.ps1
+ExecStart=pip install --upgrade --force-reinstall pywin32
+ExecStartPost=-cmd.exe /c if not exists c:\opt\mesosphere\etc\pywin32.initialized mkdir  c:\opt\mesosphere\etc\pywin32.initialized

@@ -74,11 +74,11 @@ def _check_consensus(methodname, monkeypatch, tmpdir):
     assert id1 == id2
 
 
-@pytest.mark.skipif(is_windows, reason="test fails on Windows reason: docker file does not work on windows")
+@pytest.mark.skipif(is_windows, reason="Cannot run Linux zookeeper docker container on Windows")
 def test_bootstrap(zk_server, monkeypatch, tmpdir):
     _check_consensus('cluster_id', monkeypatch, tmpdir)
 
 
-@pytest.mark.skipif(is_windows, reason="test fails on Windows reason: docker file does not work on windows")
+@pytest.mark.skipif(is_windows, reason="Cannot run Linux zookeeper docker container on Windows")
 def test_generate_oauth_secret(zk_server, monkeypatch, tmpdir):
     _check_consensus('generate_oauth_secret', monkeypatch, tmpdir)
