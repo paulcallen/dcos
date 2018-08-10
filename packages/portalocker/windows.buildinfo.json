@@ -1,0 +1,22 @@
+{
+  "requires": [
+    { "name":"python", "variant":"windows" }
+  ],
+  "sources": {
+    "pywin32": {
+      "kind": "url",
+      "url": "https://files.pythonhosted.org/packages/9f/9d/f4b2170e8ff5d825cd4398856fee88f6c70c60bce0aa8411ed17c1e1b21f/pywin32-223-cp36-cp36m-win_amd64.whl",
+      "sha1": "967eee2284efc6c3cfea4f90254c17a4014d3738"
+    },
+    "pypiwin32": {
+      "kind": "url",
+      "url": "https://files.pythonhosted.org/packages/d0/1b/2f292bbd742e369a100c91faa0483172cd91a1a422a6692055ac920946c5/pypiwin32-223-py3-none-any.whl",
+      "sha1": "bca8c07e5b33f4e506ba1f1fcde41d0dc1071dcb"
+    },
+    "portalocker": {
+      "kind": "url",
+      "url": "https://files.pythonhosted.org/packages/57/41/05e79e5516db1cc0c967b3202388cde729f871c871b0a07bf24ff11adfcf/portalocker-1.2.1-py2.py3-none-any.whl",
+      "sha1": "b6fdc8335bbd6ed96dc56c9a857d64b88adc8b58"
+    }
+  }
+}
