@@ -1,0 +1,10 @@
+{
+    "requires": [{"name":"windows-7zip", "variant":"windows"}],
+    "sources": {
+      "windows-apache": {
+        "kind": "url",
+        "url": "https://de.apachehaus.com/downloads/httpd-2.4.33-o102o-x64-vc14-r2.zip",
+        "sha1": "4ac700444d9b20022aebbb8a2eeb942b4d40a3ab"
+      }
+    }
+  }
