@@ -1,0 +1,10 @@
+{
+  "sources": {
+    "systemctl-win": {
+      "kind": "git",
+      "git": "https://github.com/dcos/dcos-windows.git",
+      "ref": "1aa2718028473a7de378f4355659ee5044dedc66",
+      "ref_origin": "master"
+    }
+  }
+}
