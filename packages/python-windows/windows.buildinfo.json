@@ -1,0 +1,13 @@
+{
+  "environment": {
+    "PYTHONPATH": "c:\\opt\\mesosphere\\lib\\site-packages;c:\\opt\\mesosphere\\bin\\lib",
+    "PYTHONUNBUFFERED": "true"
+  },
+  "sources": {
+    "python": {
+      "kind": "url",
+      "url": "https://www.python.org/ftp/python/3.6.4/python-3.6.4-amd64.exe",
+      "sha1": "780ef44f93619fa6129b81141ce55ae22945cf18"
+    }
+  }
+}
