@@ -1,0 +1,18 @@
+[Unit]
+Description=DC/OS Diagnostics Agent: exposes component health
+Requires=dcos-portalocker.service
+After=dcos-portalocker.service
+[Service]
+EnvironmentFile=c:\opt\mesosphere\environment.export.ps1
+EnvironmentFile=c:\opt\mesosphere\etc\dcos-diagnostics.env.ps1
+EnvironmentFile=-c:\opt\mesosphere\etc\dcos-diagnostics-extra.env.ps1
+Restart=always
+StartLimitInterval=0
+RestartSec=5
+LimitNOFILE=16384
+PermissionsStartOnly=True
+User=dcos_diagnostics
+SupplementaryGroups=dcos_adminrouter
+ExecStartPre=c:\opt\mesosphere\bin\scripts\bootstrap.exe dcos-diagnostics-agent
+ExecStartPre=c:\opt\mesosphere\bin\scripts\bootstrap.exe dcos-checks-agent
+ExecStart=pwsh -command c:\opt\mesosphere\bin\dcos-diagnostics.exe daemon --no-unix-socket --port 9003 --config $env:DCOS_DIAGNOSTICS_CONFIG_PATH
