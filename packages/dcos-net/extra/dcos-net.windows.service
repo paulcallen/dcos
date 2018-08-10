@@ -1,0 +1,26 @@
+[Unit]
+Description=DC/OS Net: A distributed systems & network overlay orchestration engine
+Requires=dcos-portalocker.service
+After=dcos-portalocker.service
+[Service]
+Restart=always
+StartLimitInterval=0
+KillSignal=SIGKILL
+RestartSec=5
+LimitNOFILE=16384
+User=dcos_net
+WorkingDirectory=${PKG_PATH}\dcos-net
+EnvironmentFile=c:\opt\mesosphere\etc\check_time.env.ps1
+EnvironmentFile=c:\opt\mesosphere\environment.export.ps1
+EnvironmentFile=c:\opt\mesosphere\etc\dcos_net.ps1
+EnvironmentFile=c:\opt\mesosphere\etc\dns_config.ps1
+Environment=HOME=c:\opt\mesosphere
+ExecStartPre=cmd /c if not exist c:\var\lib\dcos\navstar\mnesia mkdir c:\var\lib\dcos\navstar\mnesia
+ExecStartPre=cmd /c if not exist c:\var\lib\dcos\navstar\lashup mkdir c:\var\lib\dcos\navstar\lashup
+ExecStartPre=pwsh.exe -file c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.ps1 ip-link-add dcos-net
+ExecStartPre=pwsh.exe -file c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.ps1 ip-addr-add-ipv6 fd01:d::c633:6401 128 dcos-net
+ExecStartPre=pwsh.exe -file c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.ps1 ip-addr-add 198.51.100.3 32 dcos-net
+ExecStartPre=pwsh.exe -file c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.ps1 ip-addr-add 198.51.100.2 32 dcos-net
+ExecStartPre=pwsh.exe -file c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.ps1 ip-addr-add 198.51.100.1 32 dcos-net
+ExecStartPre=c:\opt\mesosphere\bin\scripts\bootstrap.exe dcos-net
+ExecStart=pwsh.exe -file C:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-start.ps1
