@@ -35,15 +35,14 @@
     "python-retrying":"windows",
     "python-windows":"windows",
     "six":"windows",
-    "spartan":"windows",
     "teamcity-messages":"windows",
     "windows-7zip":"windows",
     "windows-apache":"windows",
     "windows-powershell-core":"windows",
     "windows-systemctl":"windows"
-  },
-  "exclude": [
-    "avro-cpp",
+},
+"exclude": [
+  "avro-cpp",
     "boost-libs",
     "check-time",
     "cni",
@@ -80,9 +79,9 @@
     "python-tox",
     "rexray",
     "strace",
-    "telegraf",
     "toybox"
   ],
-  "bootstrap_package_list": ["dcos-image"]
+  "core_package_list": [
+    "dcos-image"
+    ]
 }
-

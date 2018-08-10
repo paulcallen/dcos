@@ -1,10 +1,12 @@
 {
   "exclude": [
     "dcos-launch",
-    "erts",
-    "openstackservice",
-    "spartan"
-  ],
+    "python-windows",
+    "windows-7zip",
+    "windows-apache",
+    "windows-powershell-core",
+    "windows-systemctl"
+],
   "bootstrap_package_list": ["dcos-image"]
 }
 
