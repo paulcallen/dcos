@@ -15,4 +15,4 @@ User=dcos_diagnostics
 SupplementaryGroups=dcos_adminrouter
 ExecStartPre=c:\opt\mesosphere\bin\scripts\bootstrap.exe dcos-diagnostics-agent
 ExecStartPre=c:\opt\mesosphere\bin\scripts\bootstrap.exe dcos-checks-agent
-ExecStart=pwsh -command c:\opt\mesosphere\bin\dcos-diagnostics.exe daemon --no-unix-socket --port 9003 --config $env:DCOS_DIAGNOSTICS_CONFIG_PATH
+ExecStart=powershell -command c:\opt\mesosphere\bin\dcos-diagnostics.exe daemon --no-unix-socket --port 9003 --config $env:DCOS_DIAGNOSTICS_CONFIG_PATH

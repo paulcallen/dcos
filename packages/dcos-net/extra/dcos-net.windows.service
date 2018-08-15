@@ -23,4 +23,4 @@ ExecStartPre=pwsh.exe -file c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-
 ExecStartPre=pwsh.exe -file c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.ps1 ip-addr-add 198.51.100.2 32 dcos-net
 ExecStartPre=pwsh.exe -file c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.ps1 ip-addr-add 198.51.100.1 32 dcos-net
 ExecStartPre=c:\opt\mesosphere\bin\scripts\bootstrap.exe dcos-net
-ExecStart=pwsh.exe -file C:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-start.ps1
+ExecStart=powershell.exe -file C:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-start.ps1
