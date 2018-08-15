@@ -15,4 +15,4 @@ EnvironmentFile=-c:\opt\mesosphere\etc\dcos-metrics-extra.env.ps1
 # NOTE: bootstrap here needs access to name resolution, so needs dcos-net working
 ExecStartPre=c:\opt\mesosphere\bin\scripts\bootstrap.exe dcos-metrics-agent
 ExecStartPre=pwsh.exe -command  test-path c:\var\lib\dcos\cluster-id 
-ExecStart=pwsh.exe -command c:\opt\mesosphere\bin\dcos-metrics.exe -role agent -config $env:DCOS_METRICS_CONFIG_PATH
+ExecStart=powershell.exe -command c:\opt\mesosphere\bin\dcos-metrics.exe -role agent -config $env:DCOS_METRICS_CONFIG_PATH
