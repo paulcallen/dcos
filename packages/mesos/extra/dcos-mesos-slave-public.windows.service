@@ -20,6 +20,7 @@ EnvironmentFile=-c:\opt\mesosphere\etc\mesos-slave-common-extras.ps1
 EnvironmentFile=-c:\var\lib\dcos\mesos-slave-common.ps1
 EnvironmentFile=-c:\var\lib\dcos\mesos-resources.ps1
 EnvironmentFile=-C:\run\dcos\etc\mesos-slave-public.ps1
+EnvironmentFile=-c:\azuredata\mesos\auth-env.ps1
 ExecStartPre=ping.exe -n 1 ready.spartan
 ExecStartPre=c:\opt\mesosphere\bin\scripts\bootstrap.exe dcos-mesos-slave-public
 ExecStart=c:\opt\mesosphere\bin\mesos-agent.exe
