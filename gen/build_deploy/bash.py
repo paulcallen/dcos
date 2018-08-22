@@ -1086,13 +1086,22 @@ def make_installer_docker(variant, variant_info, installer_info):
             archive_name, _ = os.path.splitext(os.path.abspath(installer_filename))
 
             # Archive to stdout
-            archive_command = "7z.exe a {} {} {} -so".format(archive_name,
-                                                             genconf_tar,
-                                                             script_filename)
+            archive_command = "7z.exe a {} {} {} -so -ttar".format(archive_name,
+                                                                   genconf_tar,
+                                                                   script_filename)
 
             # compress from stdin
-            compress_command = "7z.exe a {} -si".format(os.path.abspath(installer_filename))
+            compress_command = "7z.exe a {} -si -txz".format(os.path.abspath(installer_filename))
+
             commandline = "{} | {}".format(archive_command, compress_command)
+
+            # Remove the existing files in case they already exist
+            if os.path.exists(archive_name):
+                remove_file(archive_name)
+            if os.path.exists(os.path.abspath(installer_filename)):
+                remove_file(os.path.abspath(installer_filename))
+
+            # Do archive and compression
             subprocess.check_call(commandline, stdout=subprocess.DEVNULL, shell=True)
         else:
             tar_filename = "tar"
