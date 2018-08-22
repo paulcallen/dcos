@@ -8,6 +8,8 @@ import time
 
 import dns.query
 
+from pkgpanda.constants import is_windows
+
 
 WATCHDOG_TIMEOUT = 60
 NAME_SERVERS = ['198.51.100.1', '198.51.100.2', '198.51.100.3']
@@ -40,11 +42,15 @@ def kill(name):
         logging.info('Killing is disabled')
         return 0
     logging.info('Killing %s', name)
-    r = subprocess.run(['/usr/bin/env',
-                        'systemctl', 'kill',
-                        '--signal', 'SIGKILL',
-                        '--kill-who', 'main',
-                        name])
+    if is_windows:
+        command = ['systemctl', 'kill', '--signal', 'SIGKILL', name]
+    else:
+        command = ['/usr/bin/env',
+                   'systemctl', 'kill',
+                   '--signal', 'SIGKILL',
+                   '--kill-who', 'main',
+                   name]
+    r = subprocess.run(command)
     if r.returncode == 0:
         logging.info('%s was successfully killed', name)
     return r.returncode
