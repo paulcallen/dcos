@@ -322,14 +322,14 @@ function dcos_install
 #    remove-item -force -recurse c:\\bootstrap_tmp  -ErrorAction SilentlyContinue
 }
 
-start-transcript -path "c:/dcos_install.log" -force -IncludeInvocationHeader:$true
+# start-transcript -path "c:/dcos_install.log" -force -IncludeInvocationHeader:$true
 $ROLES = $args
 if ($ROLES.count -eq 0)
 {
     throw "Must specify a role of 'slave' or 'slave_public'"
 }
 dcos_install
-stop-transcript
+# stop-transcript
 
 """
 else:
