@@ -119,12 +119,12 @@ def copy_file(src_path, dst_path):
 def copy_directory(src_path, dst_path):
     """copy recursively a directory tree from one location to another"""
     if is_windows:
-        # To make sure the copy works we are using cmd version as python
+        # To make sure the copy works we are using xcopy (system executable) as python
         # libraries may not handle symbolic links and other things that are
         # thrown at it.
         src = src_path.replace('/', '\\')
         dst = dst_path.replace('/', '\\')
-        subprocess.check_call(['cmd.exe', '/c', 'xcopy', src, dst, '/E', '/B', '/I'], stdout=subprocess.DEVNULL)
+        subprocess.check_call(['xcopy.exe', src, dst, '/E', '/B', '/I'], stdout=subprocess.DEVNULL)
     else:
         subprocess.check_call(['cp', '-r', src_path, dst_path])
 
