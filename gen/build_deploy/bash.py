@@ -196,13 +196,28 @@ write-output 'Configuring DC/OS'
 {{ setup_flags }}
 }
 
+function RetryCurl
+{
+    param($url, $path, $name)
+    for($i = 1; $i -le 10; $i++) {
+        try {
+            & curl.exe --keepalive-time 2 -fLsS --retry 20 -o $path $url
+            if ($LASTEXITCODE -eq 0) {
+                Write-Output "Downloaded $name ($url) in $i attempts"
+                return
+            }
+        } catch {
+        }
+        Sleep(2)
+    }
+    throw "Failed to download $name ($url)"
+}
+
 function do_install_vc_runtime
 {
     param($url, $name)
-    & curl.exe -fLsS --retry 20 -o c:\\bootstrap_tmp\\VC_redist.x64.exe $url
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to download $name ($url)"
-    }
+    RetryCurl -url $url -path "c:\\bootstrap_tmp\\VC_redist.x64.exe" -name $name
+
     & cmd.exe /c start /wait c:\\bootstrap_tmp\\VC_redist.x64.exe /install /passive /norestart
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to install $name ($url)"
@@ -221,10 +236,9 @@ function install_vc_runtime
 function install_7zip
 {
     # install 7zip in order to unpack the bootstrap node
-    & curl.exe -fLsS --retry 20 -o c:\\bootstrap_tmp\\7z1801-x64.msi https://7-zip.org/a/7z1801-x64.msi
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to download 7zip"
-    }
+    RetryCurl -url "https://dcos-mirror.azureedge.net/winbootstrap/7z1801-x64.msi" `
+        -path "c:\\bootstrap_tmp\\7z1801-x64.msi" -name "7-Zip"
+
     & cmd.exe /c start /wait msiexec /i c:\\bootstrap_tmp\\7z1801-x64.msi INSTALLDIR="c:\\opt\\mesosphere\\bin" /qn
     if ($LASTEXITCODE -ne 0) {
         throw "failed to install 7zip"
@@ -234,11 +248,8 @@ function install_7zip
 
 function install_systemd_alternative
 {
-    & curl.exe -fLsS --retry 20 -o c:\\bootstrap_tmp\\systemctl-win.zip `
-        https://github.com/dcos/dcos-windows/releases/download/0.01/systemctl-win.zip
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to download windows systemctl-win.zip"
-    }
+    RetryCurl -url "https://github.com/dcos/dcos-windows/releases/download/0.01/systemctl-win.zip" `
+        -path "c:\\bootstrap_tmp\\systemctl-win.zip" -name "systemctl for Windows"
 
     & c:\\opt\\mesosphere\\bin\\7z.exe e -oc:\\bootstrap_tmp c:\\bootstrap_tmp\\systemctl-win.zip
     if ($LASTEXITCODE -ne 0) {
@@ -248,23 +259,19 @@ function install_systemd_alternative
 
 function install_powershell_core
 {
-    & curl.exe -fLsS --retry 20 -o c:\\bootstrap_tmp\\PowerShell-6.0.2-win-x64.zip `
-            https://github.com/PowerShell/PowerShell/releases/download/v6.0.2/PowerShell-6.0.2-win-x64.zip
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to download powershell core"
-    }
+    RetryCurl -url "https://github.com/PowerShell/PowerShell/releases/download/v6.0.2/PowerShell-6.0.2-win-x64.zip" `
+         -path "c:\\bootstrap_tmp\\PowerShell-6.0.2-win-x64.zip" -name "PowerShell Core"
+
     c:\\opt\\mesosphere\\bin\\7z.exe x c:\\bootstrap_tmp\\PowerShell-6.0.2-win-x64.zip -oc:\\opt\\mesosphere\\bin
     remove-item c:\\bootstrap_tmp\\PowerShell-6.0.2-win-x64.zip
 }
 
 function download_dependencies
 {
-
     install_vc_runtime
     install_7zip
     install_systemd_alternative
     install_powershell_core
-
 }
 
 # Install the DC/OS services, start DC/OS
@@ -322,14 +329,12 @@ function dcos_install
 #    remove-item -force -recurse c:\\bootstrap_tmp  -ErrorAction SilentlyContinue
 }
 
-# start-transcript -path "c:/dcos_install.log" -force -IncludeInvocationHeader:$true
 $ROLES = $args
 if ($ROLES.count -eq 0)
 {
     throw "Must specify a role of 'slave' or 'slave_public'"
 }
 dcos_install
-# stop-transcript
 
 """
 else:
