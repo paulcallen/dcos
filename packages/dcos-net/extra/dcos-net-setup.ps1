@@ -7,55 +7,83 @@ import-module C:\Windows\System32\WindowsPowerShell\v1.0\Modules\DnsClient\MSFT_
 
 # Add an IP address to the specified adapter if it does not already exist.
 # Then add that IP address to all adapters as a DNS lookup address.
-function AddDnsAddress
+function SetLoopbackAdapterAddresses
 {
-    param($address, $mask, $addressFamily, $adapterName) 
+    param($addresses, $mask, $addressFamily, $adapterName) 
 
-    # get adapter
+    # get adapter, should exist before calling this
     $dcosNetDevice = Get-NetAdapter -Name "$adapterName" -ErrorAction SilentlyContinue
     if(!$dcosNetDevice) {
         Throw "$adapterName adapter was not found"
     }
 
-    # check if address already exists, if so we don't need to do anything
-    $existingAddress = Get-NetIPAddress -InterfaceAlias $adapterName -AddressFamily $addressFamily -IPAddress $address -ErrorAction SilentlyContinue
-    if($existingAddress) {
-        return
-    }
-
-    # not currently there so add address to adapter
-    New-NetIPAddress -InterfaceAlias $adapterName -AddressFamily $addressFamily -IPAddress $address -PrefixLength $mask | Out-Null
-
-    # new DNS address, so add new address to all adapters, before any existing addresses that may already exist
-    Get-DnsClientServerAddress -AddressFamily $addressFamily | foreach-object {
-        # only add if address is not already in the list
-        if ($_.ServerAddresses -notcontains $address) {
-            Set-DnsClientServerAddress -InterfaceAlias $_.InterfaceAlias  -ServerAddresses @($address, $_.ServerAddresses)
+    # Loop through the addresses
+    $addresses | foreach-object {
+        # check if address already exists, if so we don't need to do anything
+        $existingAddress = Get-NetIPAddress -InterfaceAlias $adapterName -AddressFamily $addressFamily -IPAddress $_ -ErrorAction SilentlyContinue
+        if($existingAddress) {
+            return
         }
+
+        # not currently there so add address to adapter
+        New-NetIPAddress -InterfaceAlias $adapterName -AddressFamily $addressFamily -IPAddress $_ -PrefixLength $mask | Out-Null
     }
 }
 
-# add IPv4 address to adapter and add as DNS address to all adapters
-#ExecStartPre=c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.ps1 ip-addr-add 198.51.100.1 32 dcos-net
-#ExecStartPre=c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.ps1 ip-addr-add 198.51.100.2 32 dcos-net
-#ExecStartPre=c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.ps1 ip-addr-add 198.51.100.3 32 dcos-net
-if ($args[0] -eq "ip-addr-add" )
+# Add DNS lookup addresses to all interfaces
+function SetDnsAddresses
 {
-    AddDnsAddress -address $args[1] -mask $args[2] -addressFamily IPv4 -adapterName $args[3]
+    param($addresses, $addressFamily) 
+    #Add addresses to all adapters
+    Get-DnsClientServerAddress -AddressFamily $addressFamily | foreach-object {
+        Set-DnsClientServerAddress -InterfaceAlias $_.InterfaceAlias -ServerAddresses @($addresses)
+#        Set-DnsClientServerAddress -InterfaceAlias $_.InterfaceAlias -ResetServerAddresses -Confirm:$false
+    }
 }
-# add IPv6 address to adapter and add as DNS address to all adapters
-#ExecStartPre=c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.ps1 ip-addr-add-ipv6 fd01:d::c633:6401 128 dcos-net
-elseif ($args[0] -eq "ip-addr-add-ipv6")
+
+# add IPv4 addresses to loopback adapter
+# args[1] = list of comma separated addresses
+# args[2] = address mask
+# args[3] = loopback adapter name
+if ($args[0] -eq "SetLoopbackAdapterAddresses" )
+{
+    $addresses = $args[1].Split(",") | ForEach-Object { $_.Trim() }
+    SetLoopbackAdapterAddresses -addresses $addresses -mask $args[2] -addressFamily IPv4 -adapterName $args[3]
+}
+# add IPv6 address to loopback adapter
+# args[1] = list of comma separated addresses
+# args[2] = address mask
+# args[3] = loopback adapter name
+elseif ($args[0] -eq "SetLoopbackAdapterAddressesV6")
 {
     if ($env:DCOS_NET_IPV6 -ne "true")
     {
         return
     }
-    AddDnsAddress -address $args[1] -mask $args[2] -addressFamily IPv6  -adapterName $args[3]
+    $addresses = $args[1].Split(",") | ForEach-Object { $_.Trim() }
+    SetLoopbackAdapterAddresses -addresses $addresses -mask $args[2] -addressFamily IPv6  -adapterName $args[3]
+}
+# Set the IPv4 DNS server lookup addresses on all adapters
+# args[1] = list of comma separated addresses
+elseif ($args[0] -eq "SetDnsAddresses" )
+{
+    $addresses = $args[1].Split(",") | ForEach-Object { $_.Trim() }
+    SetDnsAddresses -addresses $addresses -addressFamily IPv4
+}
+# Set the IPv4 DNS server lookup addresses on all adapters
+# args[1] = list of comma separated addresses
+elseif ($args[0] -eq "SetDnsAddressesV6" )
+{
+    if ($env:DCOS_NET_IPV6 -ne "true")
+    {
+        return
+    }
+    $addresses = $args[1].Split(",") | ForEach-Object { $_.Trim() }
+    SetDnsAddresses -addresses $addresses -addressFamily IPv6
 }
 # Add a loop-back adapter if it does not exist
-#ExecStartPre=c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.ps1 ip-link-add dcos-net
-elseif ($args[0] -eq "ip-link-add")
+# args[1] = adapter name
+elseif ($args[0] -eq "CreateLoopbackAdapter")
 {
     # First check to see if it is already installed...
     $dcosNetDevice = Get-NetAdapter -Name $args[1] -ErrorAction SilentlyContinue
@@ -81,5 +109,5 @@ elseif ($args[0] -eq "ip-link-add")
     remove-item "$env:tmp\devcon.cab" -ErrorAction Ignore
     remove-item "$env:tmp\devcon.exe" -ErrorAction Ignore
 
-    Get-NetAdapter | Where-Object { $_.DriverDescription -eq "Microsoft KM-TEST Loopback Adapter" } | Rename-NetAdapter -NewName "dcos-net"
+    Get-NetAdapter | Where-Object { $_.DriverDescription -eq "Microsoft KM-TEST Loopback Adapter" } | Rename-NetAdapter -NewName $args[1]
 }

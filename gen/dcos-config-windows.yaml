@@ -469,7 +469,7 @@ package:
       ].
   - path: /etc/check_time.env.ps1
     content: |
-        $env:ENABLE_CHECK_TIME="{{ check_time }}"
+      $env:ENABLE_CHECK_TIME="{{ check_time }}"
   - path: /etc/dcos_net.ps1
     content: |
       $env:DCOS_NET_WATCHDOG="{{ dcos_net_watchdog }}"
@@ -478,3 +478,6 @@ package:
     content: |
       $env:MASTER_SOURCE="master_list"
       $env:RESOLVERS="{{ resolvers_str }}"
+  - path: /etc/dns_search_config.ps1
+    content: |
+      {{ dcos_gen_resolvconf_search_str }}

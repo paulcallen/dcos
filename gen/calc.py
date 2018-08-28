@@ -275,7 +275,10 @@ def validate_json_dictionary(data):
 
 def calculate_gen_resolvconf_search(dns_search):
     if len(dns_search) > 0:
-        return "SEARCH=" + dns_search
+        if is_windows:
+            return "$env:SEARCH='" + dns_search + "'"
+        else:
+            return "SEARCH=" + dns_search
     else:
         return ""
 

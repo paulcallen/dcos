@@ -33,10 +33,13 @@ $full_path = "${env:PKG_PATH}\dcos-net".replace('/', '\')
 	}
 }) | set-content "$env:PKG_PATH\dcos.target.wants\dcos-net.service"
 
-# Copy watchdog service units
+# Copy watchdog/resolveconf service units
 Copy-Item "c:\pkg\extra\dcos-net-watchdog.windows.service" "$env:PKG_PATH\dcos.target.wants\dcos-net-watchdog.service"
+Copy-Item "c:\pkg\extra\dcos-gen-resolvconf.windows.service" "$env:PKG_PATH\dcos.target.wants\dcos-gen-resolvconf.service"
+Copy-Item "c:\pkg\extra\dcos-gen-resolvconf.windows.timer" "$env:PKG_PATH\dcos.target.wants\dcos-gen-resolvconf.timer"
 
 # Copy necessary scripts
 copy-item "c:\pkg\extra\dcos-net-setup.ps1" "$env:PKG_PATH\dcos-net\bin"
 copy-item "c:\pkg\extra\dcos-net-watchdog.py" "$env:PKG_PATH\dcos-net\bin"
 Copy-Item "c:\pkg\extra\dcos-net-start.ps1" "$env:PKG_PATH\dcos-net\bin"
+copy-item "c:\pkg\extra\gen_resolvconf.ps1" "$env:PKG_PATH\dcos-net\bin"

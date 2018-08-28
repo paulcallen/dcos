@@ -1,0 +1,11 @@
+[Unit]
+Description=Generate resolv.conf: configures network name resolution
+
+[Service]
+Type=oneshot
+StandardOutput=journal
+StandardError=journal
+EnvironmentFile=/opt/mesosphere/environment.export.ps1
+EnvironmentFile=/opt/mesosphere/etc/dns_config.ps1
+EnvironmentFile=/opt/mesosphere/etc/dns_search_config.ps1
+ExecStart=powershell.exe -file /opt/mesosphere/active/dcos-net/dcos-net/bin/gen_resolvconf.ps1

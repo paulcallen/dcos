@@ -9,4 +9,4 @@ User=dcos_net_watchdog
 EnvironmentFile=c:\opt\mesosphere\environment.export.ps1
 EnvironmentFile=c:\opt\mesosphere\etc\dcos_net.ps1
 Environment=HOME=c:\opt\mesosphere
-ExecStart=python.exe c:\opt\mesosphere\active\dcos-net\bin\dcos-net-watchdog.py
+ExecStart=python.exe c:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-watchdog.py
