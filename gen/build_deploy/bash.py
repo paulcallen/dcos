@@ -248,7 +248,7 @@ function install_7zip
 
 function install_systemd_alternative
 {
-    RetryCurl -url "https://github.com/dcos/dcos-windows/releases/download/0.01/systemctl-win.zip" `
+    RetryCurl -url "https://github.com/dcos/dcos-windows/releases/download/0.03/systemctl-win.zip" `
         -path "c:\\bootstrap_tmp\\systemctl-win.zip" -name "systemctl for Windows"
 
     & c:\\opt\\mesosphere\\bin\\7z.exe e -oc:\\bootstrap_tmp c:\\bootstrap_tmp\\systemctl-win.zip
