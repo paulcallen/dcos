@@ -30,15 +30,11 @@ function SetLoopbackAdapterAddresses
     }
 }
 
-# Add DNS lookup addresses to all interfaces
+# Add DNS lookup addresses to the specified adapter
 function SetDnsAddresses
 {
-    param($addresses, $addressFamily) 
-    #Add addresses to all adapters
-    Get-DnsClientServerAddress -AddressFamily $addressFamily | foreach-object {
-        Set-DnsClientServerAddress -InterfaceAlias $_.InterfaceAlias -ServerAddresses @($addresses)
-#        Set-DnsClientServerAddress -InterfaceAlias $_.InterfaceAlias -ResetServerAddresses -Confirm:$false
-    }
+    param($addresses, $adapterName) 
+    Set-DnsClientServerAddress -InterfaceAlias $adapterName -ServerAddresses @($addresses)
 }
 
 # add IPv4 addresses to loopback adapter
@@ -65,13 +61,15 @@ elseif ($args[0] -eq "SetLoopbackAdapterAddressesV6")
 }
 # Set the IPv4 DNS server lookup addresses on all adapters
 # args[1] = list of comma separated addresses
+# args[2] = loopback adapter name
 elseif ($args[0] -eq "SetDnsAddresses" )
 {
     $addresses = $args[1].Split(",") | ForEach-Object { $_.Trim() }
-    SetDnsAddresses -addresses $addresses -addressFamily IPv4
+    SetDnsAddresses -addresses $addresses -adapterName $args[2]
 }
 # Set the IPv4 DNS server lookup addresses on all adapters
 # args[1] = list of comma separated addresses
+# args[2] = loopback adapter name
 elseif ($args[0] -eq "SetDnsAddressesV6" )
 {
     if ($env:DCOS_NET_IPV6 -ne "true")
@@ -79,7 +77,7 @@ elseif ($args[0] -eq "SetDnsAddressesV6" )
         return
     }
     $addresses = $args[1].Split(",") | ForEach-Object { $_.Trim() }
-    SetDnsAddresses -addresses $addresses -addressFamily IPv6
+    SetDnsAddresses -addresses $addresses -adapterName $args[2]
 }
 # Add a loop-back adapter if it does not exist
 # args[1] = adapter name

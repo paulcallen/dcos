@@ -41,7 +41,7 @@ else {
 
 $all_string = $all -join ","
 
-& powershell -file "C:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.ps1" "SetDnsAddresses" "$all_string"
+& powershell -file "C:\opt\mesosphere\active\dcos-net\dcos-net\bin\dcos-net-setup.ps1" "SetDnsAddresses" "$all_string" "dcos-net"
 if ($LASTEXITCODE -ne 0) {
     throw "Failed to set DNS server addresses"
 }
