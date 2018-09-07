@@ -4,7 +4,7 @@ import shutil
 from subprocess import CalledProcessError, check_call, check_output, DEVNULL
 
 from pkgpanda.exceptions import ValidationError
-from pkgpanda.util import download_atomic, is_windows, logger, sha1
+from pkgpanda.util import download_atomic, is_windows, logger, remove_directory, remove_file, rename_file, sha1
 
 
 # Ref must be a git sha-1. We then pass it through get_sha1 to make
@@ -273,9 +273,9 @@ def _strip_first_path_component(path, allow_extra_files=False):
     for entry in contents:
         old_path = os.path.join(top_level_dir, entry)
         new_path = os.path.join(path, entry)
-        os.rename(old_path, new_path)
+        rename_file(old_path, new_path)
 
-    os.rmdir(top_level_dir)
+    remove_directory(top_level_dir)
 
 
 def extract_archive(archive, dst_dir):
@@ -297,7 +297,7 @@ def extract_archive(archive, dst_dir):
                 check_call(['7z', 'x', tar_filename, '-o' + dst_dir], stdout=DEVNULL)
             finally:
                 if delete_intermediate_file:
-                    os.remove(tar_filename)
+                    remove_file(tar_filename)
             # 7zip does not support '--strip-components=1',
             _strip_first_path_component(dst_dir, True)
         else:
