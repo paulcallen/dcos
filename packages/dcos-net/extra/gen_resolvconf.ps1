@@ -18,7 +18,7 @@ if (test-path env:SEARCH) {
 $dcos_nets_up = @()
 $NAME_SERVERS | ForEach-Object {
     try {
-        Resolve-DnsName $dns_test_query -server $_
+        Resolve-DnsName $dns_test_query -server $_ -ErrorAction Stop
 
         # if successful add it to the list
         $dcos_nets_up += $_
